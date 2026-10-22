@@ -38,10 +38,13 @@ export interface TimelineMilestone {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ol class="timeline">
-      @for (m of milestones(); track m.number; let last = $last) {
+      @for (m of milestones(); track m.number; let last = $last, first = $first) {
         <li class="milestone-block" [class.last]="last">
           <a
             class="milestone"
+            matRipple
+            [matRippleDisabled]="!m.link && !m.action"
+            [class.first]="$first"
             [class.current]="m.state === 'current'"
             [class.static]="!m.link && !m.action"
             [routerLink]="m.action ? null : (m.link ?? null)"
@@ -53,6 +56,7 @@ export interface TimelineMilestone {
             [attr.aria-label]="m.title + ', ' + (m.state === 'done' ? 'completed' : m.subtitle)"
           >
             <span class="rail">
+              <span class="line top" [class.hidden]="first"></span>
               <span class="marker" [class]="m.state">
                 @if (m.state === 'done') {
                   <ds-icon name="check" [size]="24" />
@@ -60,11 +64,9 @@ export interface TimelineMilestone {
                   <span class="t-title-medium">{{ m.number }}</span>
                 }
               </span>
-              @if (!last && m.state !== 'current') {
-                <span class="line"></span>
-              }
+              <span class="line" [class.hidden]="last && !(m.state === 'current' && m.tasks?.length)"></span>
             </span>
-            <span class="body" matRipple [matRippleDisabled]="!m.link && !m.action">
+            <span class="body">
               <span class="text">
                 <span class="header">
                   <span class="title t-title-medium">{{ m.title }}</span>
@@ -116,60 +118,62 @@ export interface TimelineMilestone {
     </ol>
   `,
   styles: `
+    /* Card: rows run edge to edge so hover/ripple cover marker + text + chevron. */
     :host {
       display: block;
       background: var(--md-sys-color-secondary-container);
       border-radius: var(--md-sys-shape-corner-medium);
-      padding: var(--space-2);
+      padding: var(--space-1) 0;
+      overflow: hidden;
     }
     ol { list-style: none; margin: 0; padding: 0; }
     a { color: inherit; text-decoration: none; }
-    .milestone { display: flex; gap: var(--space-2); min-height: 76px; border-radius: 8px; }
-    .milestone.current, .last > .milestone { min-height: 0; }
+
+    /* Module row: 16px padding all round, 40px marker, rail stretched to the row edges. */
+    .milestone {
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2);
+      cursor: pointer;
+    }
     .milestone.static { cursor: default; }
     .rail {
-      width: 40px; flex: none;
-      display: flex; flex-direction: column; align-items: center; gap: var(--space-0-5);
+      width: 40px; flex: none; align-self: stretch;
+      display: flex; flex-direction: column; align-items: center;
+      margin: calc(-1 * var(--space-2)) 0;
     }
     .marker {
       width: 40px; height: 40px; border-radius: 50%; flex: none;
       display: flex; align-items: center; justify-content: center;
+      margin: var(--space-0-5) 0;
     }
     .marker.done { background: var(--md-sys-color-success-container); color: var(--md-sys-color-success); }
     .marker.current { background: var(--md-sys-color-primary); color: var(--md-sys-color-inverse-on-surface); }
     .marker.upcoming { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-surface); }
-    .line { width: 2px; flex: 1; background: var(--md-sys-color-outline); }
-    .body {
-      flex: 1; min-width: 0; position: relative;
-      display: flex; align-items: center; gap: var(--space-2);
-      padding: var(--space-0-5) var(--space-2) var(--space-3) 0;
-      align-self: stretch;
-      border-radius: 8px;
-    }
-    .milestone.current .body { padding-bottom: var(--space-1-5); }
-    .last > .milestone .body { padding-bottom: 0; }
-    .last > .milestone.current .body { padding-bottom: var(--space-1-5); }
-    .text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-0-5); align-self: flex-start; }
+    .line { width: 2px; flex: 1; min-height: 8px; background: var(--md-sys-color-outline); }
+    .line.hidden { visibility: hidden; }
+
+    .body { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-2); }
+    .text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-0-5); }
     .header { display: flex; align-items: center; gap: var(--space-1); min-height: 24px; }
     .title { color: var(--md-sys-color-on-surface); flex: 1; min-width: 0; }
     .subtitle { color: var(--md-sys-color-on-surface-variant); }
-    .chevron { color: var(--md-sys-color-on-surface); transition: transform 200ms ease; }
+    .chevron { color: var(--md-sys-color-on-surface); flex: none; transition: transform 200ms ease; }
     .chevron.up { transform: rotate(180deg); }
-    .tasks { animation: expand 220ms cubic-bezier(0.2, 0, 0, 1); transform-origin: top; }
-    @keyframes expand {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: none; }
-    }
-    @media (prefers-reduced-motion: reduce) { .tasks, .chevron { animation: none; transition: none; } }
 
-    .tasks { position: relative; padding-bottom: var(--space-1); }
+    /* Question rows of the expanded module: same full-width list item, small marker on the rail. */
+    .tasks { position: relative; animation: expand 220ms cubic-bezier(0.2, 0, 0, 1); }
     .tasks-line {
-      position: absolute; left: 19px; top: 0; bottom: 0; width: 2px;
+      position: absolute; left: calc(var(--space-2) + 19px); top: 0; bottom: 0; width: 2px;
       background: var(--md-sys-color-outline);
     }
-    .tasks.last { padding-bottom: 0; }
     .tasks.last .tasks-line { bottom: 44px; }
-    .task { display: flex; align-items: center; gap: var(--space-2); position: relative; border-radius: 8px; }
+    .task {
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; gap: var(--space-2);
+      min-height: 88px;
+      padding: var(--space-2);
+    }
     .sub-marker {
       width: 40px; height: 16px; flex: none; position: relative; z-index: 1;
       display: flex; align-items: center; justify-content: center;
@@ -186,15 +190,21 @@ export interface TimelineMilestone {
       color: var(--md-sys-color-success);
       display: flex;
     }
-    .task-item {
-      flex: 1; min-width: 0;
-      display: flex; align-items: center; gap: var(--space-2);
-      min-height: 88px;
-      padding: var(--space-2) var(--space-2) var(--space-2) 0;
+    .task-item { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-2); }
+
+    /* Whole-row state layer (M3 hover 8% of on-surface). */
+    .milestone:not(.static):hover, .task:hover {
+      background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
     }
-    .task:hover .task-item, .milestone:not(.static):hover .body {
-      background: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent);
+    .milestone:focus-visible, .task:focus-visible {
+      outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px;
     }
+
+    @keyframes expand {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { .tasks, .chevron { animation: none; transition: none; } }
   `,
 })
 export class DsTimeline {
