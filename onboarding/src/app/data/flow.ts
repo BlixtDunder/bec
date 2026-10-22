@@ -1,3 +1,4 @@
+import { COUNTRY_LIST } from './countries';
 export type QuestionId =
   | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7' | 'q9' | 'q8' | 'q10'
   | 'q11' | 'q12' | 'q13' | 'q14' | 'q15' | 'q16' | 'q17' | 'q18' | 'q19';
@@ -50,18 +51,14 @@ export function moduleOf(q: QuestionId): FlowModule {
   return MODULES.find((m) => m.questions.includes(q))!;
 }
 
-export const COUNTRIES = [
-  'Denmark', 'Sweden', 'Norway', 'Finland', 'Iceland', 'Germany', 'Belgium', 'France',
-  'Netherlands', 'Poland', 'Spain', 'United Kingdom', 'United States',
-];
+/** Country dropdowns: Denmark, the Nordic countries, then A–Z (all ISO 3166-1 countries). */
+export const COUNTRIES: string[] = COUNTRY_LIST.map((c) => c.name);
 
-export const FLAG_COUNTRIES: { name: string; flag: string }[] = [
-  { name: 'Denmark', flag: 'flags/dk.png' },
-  { name: 'Sweden', flag: 'flags/se.png' },
-  { name: 'Norway', flag: 'flags/no.png' },
-  { name: 'Finland', flag: 'flags/fi.png' },
-  { name: 'Iceland', flag: 'flags/is.png' },
-];
+/** Q3 citizenship list with round flags (flag-icons 1x1, MIT). Same order as COUNTRIES. */
+export const FLAG_COUNTRIES: { name: string; flag: string }[] = COUNTRY_LIST.map((c) => ({
+  name: c.name,
+  flag: `flags/1x1/${c.code}.svg`,
+}));
 
 export const COUNTRY_CODES = ['+45', '+46', '+47', '+358', '+354', '+49', '+44', '+1'];
 

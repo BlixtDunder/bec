@@ -47,7 +47,11 @@ const CARD_STYLES = `
   }
   .row ::ng-deep .mdc-radio, .row ::ng-deep .mdc-checkbox { flex: none; margin: 0; }
   .lead { display: flex; align-items: center; gap: var(--space-2); }
-  .lead img { width: 32px; height: 32px; border-radius: 50%; display: block; flex: none; }
+  .lead img {
+    width: 32px; height: 32px; border-radius: 50%; display: block; flex: none; object-fit: cover;
+    /* keeps white flags (Finland, Japan…) edged on the white card */
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  }
 `;
 
 /** Radio question card: title header (body/medium (medium)) + 72px rows, radio on the right. */
@@ -93,7 +97,7 @@ export class DsRadioCard {
           (change)="toggle(o.value, $event.checked)"
         >
           @if (o.image) {
-            <span class="lead"><img [src]="o.image" alt="" />{{ o.label }}</span>
+            <span class="lead"><img [src]="o.image" alt="" loading="lazy" decoding="async" width="32" height="32" />{{ o.label }}</span>
           } @else {
             {{ o.label }}
           }
