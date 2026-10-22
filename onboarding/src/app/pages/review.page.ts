@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRippleModule } from '@angular/material/core';
 import { FlowState } from '../data/state.service';
+import { NavDirection } from '../data/nav-direction';
 import { MODULES } from '../data/flow';
 import { summarize } from '../data/summary';
 import { DsActions, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
@@ -37,7 +38,7 @@ import { DsIcon } from '../ui/icon';
       </section>
       <ds-actions>
         <button matButton="filled" type="button" (click)="send()">Send to the bank</button>
-        <a matButton="text" routerLink="/">Back</a>
+        <a matButton="text" routerLink="/" (click)="nav.back()">Back</a>
       </ds-actions>
     </ds-screen>
   `,
@@ -63,6 +64,7 @@ import { DsIcon } from '../ui/icon';
   `,
 })
 export class ReviewPage {
+  protected readonly nav = inject(NavDirection);
   private readonly state = inject(FlowState);
   private readonly router = inject(Router);
   protected readonly modules = MODULES;

@@ -20,6 +20,7 @@ import {
   moduleOf,
 } from '../data/flow';
 import { FlowState } from '../data/state.service';
+import { NavDirection } from '../data/nav-direction';
 import { DsActions, DsAlert, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsField } from '../ui/field';
 import { ChoiceOption, DsCheckboxCard, DsRadioCard, DsRadioGroupCard } from '../ui/choice';
@@ -82,6 +83,7 @@ export class QuestionPage implements DoCheck {
   protected readonly state = inject(FlowState);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly nav = inject(NavDirection);
 
   protected readonly qid = toSignal(
     this.route.paramMap.pipe(map((p) => p.get('qid') as QuestionId)),
@@ -220,10 +222,12 @@ export class QuestionPage implements DoCheck {
     }
     // Module done: hub focus falls back to the first incomplete module in order.
     this.state.completeModule(m.id);
+    this.nav.back(); // end of the section: page slides out to the right
     this.router.navigate(['/']);
   }
 
   protected back(): void {
+    this.nav.back();
     const i = this.index();
     if (i > 0) this.router.navigate(['/q', this.module().questions[i - 1]]);
     else this.router.navigate(['/']);
@@ -234,11 +238,13 @@ export class QuestionPage implements DoCheck {
     this.state.markAnswered(this.qid());
     if (m.questions.every((q) => this.state.isAnswered(q))) this.state.completeModule(m.id);
     this.state.commitEdit();
+    this.nav.back();
     this.router.navigateByUrl(this.origin());
   }
 
   protected cancel(): void {
     this.state.discardEdit();
+    this.nav.back();
     this.router.navigateByUrl(this.origin());
   }
 

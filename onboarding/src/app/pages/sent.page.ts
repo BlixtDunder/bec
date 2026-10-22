@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { FlowState } from '../data/state.service';
+import { NavDirection } from '../data/nav-direction';
 import { MODULES } from '../data/flow';
 import { DsActions, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsTimeline, TimelineMilestone } from '../ui/timeline';
@@ -28,6 +29,7 @@ import { DsTimeline, TimelineMilestone } from '../ui/timeline';
 export class SentPage {
   private readonly state = inject(FlowState);
   private readonly router = inject(Router);
+  private readonly nav = inject(NavDirection);
   protected readonly modules = MODULES;
 
   private readonly date = new Date(this.state.completedAt ?? Date.now()).toLocaleDateString('en-GB', {
@@ -45,6 +47,7 @@ export class SentPage {
 
   protected readonly backToOverview = () => {
     this.state.reset();
+    this.nav.back(); // end of the flow: slides out to the right
     this.router.navigate(['/']);
   };
 }

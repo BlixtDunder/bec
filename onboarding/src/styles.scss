@@ -209,3 +209,35 @@ button {
   .reveal, .conceal { animation: none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }
+
+// ---------------------------------------------------------------------------
+// iOS-style page transitions (router View Transitions; direction set in app.config).
+// Push: new page slides in from the right over the old one, which shifts left and dims.
+// Pop (back / close / end of a section): the page slides out to the right.
+// ---------------------------------------------------------------------------
+$ios-ease: cubic-bezier(0.2, 0.9, 0.25, 1);
+$ios-duration: 380ms;
+
+::view-transition-group(root) { animation-duration: $ios-duration; }
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: $ios-duration;
+  animation-timing-function: $ios-ease;
+  animation-fill-mode: both;
+  mix-blend-mode: normal;
+}
+
+html[data-nav='forward']::view-transition-old(root) { animation-name: ios-push-under; z-index: 0; }
+html[data-nav='forward']::view-transition-new(root) { animation-name: ios-push-in; z-index: 1; box-shadow: -8px 0 24px rgb(0 0 0 / 0.12); }
+
+html[data-nav='back']::view-transition-new(root) { animation-name: ios-pop-under; z-index: 0; }
+html[data-nav='back']::view-transition-old(root) { animation-name: ios-pop-out; z-index: 1; box-shadow: -8px 0 24px rgb(0 0 0 / 0.12); }
+
+@keyframes ios-push-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes ios-push-under { from { transform: translateX(0); filter: brightness(1); } to { transform: translateX(-30%); filter: brightness(0.92); } }
+@keyframes ios-pop-out { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes ios-pop-under { from { transform: translateX(-30%); filter: brightness(0.92); } to { transform: translateX(0); filter: brightness(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
+}

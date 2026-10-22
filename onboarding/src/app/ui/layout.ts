@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { NavDirection } from '../data/nav-direction';
 import { RouterLink } from '@angular/router';
 import { MatRippleModule } from '@angular/material/core';
 import { DsIcon } from './icon';
@@ -19,7 +20,7 @@ import { DsIcon } from './icon';
         </span>
       </button>
     } @else {
-      <a class="icon-btn" [routerLink]="closeTo()" [attr.aria-label]="back() ? 'Back' : 'Close'">
+      <a class="icon-btn" [routerLink]="closeTo()" (click)="back() && nav.back()" [attr.aria-label]="back() ? 'Back' : 'Close'">
         <span class="container" matRipple [matRippleCentered]="true">
           <ds-icon [name]="back() ? 'arrow-back' : 'close'" [size]="24" />
         </span>
@@ -64,6 +65,8 @@ export class DsTaskBar {
   readonly closeAction = input<(() => void) | null>(null);
   /** Inside an opened section: arrow-back instead of the close X. */
   readonly back = input(false);
+  /** Leaving via the task bar always pops (slides out to the right). */
+  protected readonly nav = inject(NavDirection);
 }
 
 /** Tag pill. Neutral = white; Primary = PrimaryContainer. */
