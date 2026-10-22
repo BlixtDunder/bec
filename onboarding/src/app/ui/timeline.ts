@@ -20,6 +20,10 @@ export interface TimelineMilestone {
   tag?: string;
   link?: unknown[];
   queryParams?: Record<string, string>;
+  /** Instead of navigating, run this (used to expand a module on the hub). */
+  action?: () => void;
+  /** Chevron direction: right = navigate (done modules), down = expand, up = expanded. */
+  chevron?: 'right' | 'down' | 'up';
   tasks?: TimelineTask[];
 }
 
@@ -39,9 +43,13 @@ export interface TimelineMilestone {
           <a
             class="milestone"
             [class.current]="m.state === 'current'"
-            [class.static]="!m.link"
-            [routerLink]="m.link ?? null"
-            [queryParams]="m.queryParams ?? null"
+            [class.static]="!m.link && !m.action"
+            [routerLink]="m.action ? null : (m.link ?? null)"
+            [queryParams]="m.action ? null : (m.queryParams ?? null)"
+            [attr.href]="m.action ? '' : null"
+            (click)="onMilestone($event, m)"
+            [attr.role]="m.action ? 'button' : null"
+            [attr.aria-expanded]="m.action || m.state === 'current' ? m.state === 'current' : null"
             [attr.aria-label]="m.title + ', ' + (m.state === 'done' ? 'completed' : m.subtitle)"
           >
             <span class="rail">
@@ -56,7 +64,7 @@ export interface TimelineMilestone {
                 <span class="line"></span>
               }
             </span>
-            <span class="body" matRipple [matRippleDisabled]="!m.link">
+            <span class="body" matRipple [matRippleDisabled]="!m.link && !m.action">
               <span class="text">
                 <span class="header">
                   <span class="title t-title-medium">{{ m.title }}</span>
@@ -68,8 +76,13 @@ export interface TimelineMilestone {
                   <span class="subtitle t-body-medium">{{ m.subtitle }}</span>
                 }
               </span>
-              @if (m.link) {
-                <ds-icon name="chevron-right" [size]="16" class="chevron" />
+              @if (m.link || m.action) {
+                <ds-icon
+                  [name]="(m.chevron ?? 'right') === 'right' ? 'chevron-right' : 'chevron-down'"
+                  [size]="16"
+                  class="chevron"
+                  [class.up]="m.chevron === 'up'"
+                />
               }
             </span>
           </a>
@@ -140,7 +153,14 @@ export interface TimelineMilestone {
     .header { display: flex; align-items: center; gap: var(--space-1); min-height: 24px; }
     .title { color: var(--md-sys-color-on-surface); flex: 1; min-width: 0; }
     .subtitle { color: var(--md-sys-color-on-surface-variant); }
-    .chevron { color: var(--md-sys-color-on-surface); }
+    .chevron { color: var(--md-sys-color-on-surface); transition: transform 200ms ease; }
+    .chevron.up { transform: rotate(180deg); }
+    .tasks { animation: expand 220ms cubic-bezier(0.2, 0, 0, 1); transform-origin: top; }
+    @keyframes expand {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { .tasks, .chevron { animation: none; transition: none; } }
 
     .tasks { position: relative; padding-bottom: var(--space-1); }
     .tasks-line {
@@ -179,4 +199,10 @@ export interface TimelineMilestone {
 })
 export class DsTimeline {
   readonly milestones = input.required<TimelineMilestone[]>();
+
+  protected onMilestone(e: Event, m: TimelineMilestone): void {
+    if (!m.action) return;
+    e.preventDefault();
+    m.action();
+  }
 }

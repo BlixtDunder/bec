@@ -3,22 +3,25 @@ import { RouterLink } from '@angular/router';
 import { MatRippleModule } from '@angular/material/core';
 import { DsIcon } from './icon';
 
-/** Task bar: 64px, close icon button left, centred title (title/medium). */
+/**
+ * Task bar: 64px, icon button left, centred title (title/medium).
+ * Hubs show a close X; inside an opened section (`back`) it is an arrow-back.
+ */
 @Component({
   selector: 'ds-task-bar',
   imports: [RouterLink, DsIcon, MatRippleModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (closeAction(); as action) {
-      <button type="button" class="icon-btn" (click)="action()" aria-label="Close">
+      <button type="button" class="icon-btn" (click)="action()" [attr.aria-label]="back() ? 'Back' : 'Close'">
         <span class="container" matRipple [matRippleCentered]="true">
-          <ds-icon name="close" [size]="24" />
+          <ds-icon [name]="back() ? 'arrow-back' : 'close'" [size]="24" />
         </span>
       </button>
     } @else {
-      <a class="icon-btn" [routerLink]="closeTo()" aria-label="Close">
+      <a class="icon-btn" [routerLink]="closeTo()" [attr.aria-label]="back() ? 'Back' : 'Close'">
         <span class="container" matRipple [matRippleCentered]="true">
-          <ds-icon name="close" [size]="24" />
+          <ds-icon [name]="back() ? 'arrow-back' : 'close'" [size]="24" />
         </span>
       </a>
     }
@@ -59,6 +62,8 @@ export class DsTaskBar {
   readonly title = input.required<string>();
   readonly closeTo = input<string | string[]>('/');
   readonly closeAction = input<(() => void) | null>(null);
+  /** Inside an opened section: arrow-back instead of the close X. */
+  readonly back = input(false);
 }
 
 /** Tag pill. Neutral = white; Primary = PrimaryContainer. */

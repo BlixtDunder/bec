@@ -14,7 +14,7 @@ import { DsIcon } from '../ui/icon';
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
     <ds-screen>
-      <ds-task-bar title="Review" />
+      <ds-task-bar title="Review" [back]="true" />
       <ds-page-header
         title="Check your answers"
         body="Tap an area to change your answers. Nothing is sent until you confirm."

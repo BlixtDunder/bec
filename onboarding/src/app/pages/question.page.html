@@ -1,5 +1,5 @@
 <ds-screen>
-  <ds-task-bar [title]="module().title" [closeAction]="editing() ? cancelFn : null" />
+  <ds-task-bar [title]="module().title" [back]="true" [closeAction]="editing() ? cancelFn : null" />
   <ds-page-header [tag]="tag()" [title]="copy().title" [body]="copy().body ?? null" />
 
   @switch (qid()) {

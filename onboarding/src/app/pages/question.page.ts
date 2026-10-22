@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DoCheck, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DoCheck, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -136,6 +136,14 @@ export class QuestionPage implements DoCheck {
     return this.state.answers;
   }
 
+  constructor() {
+    // Opening a question in an unfinished module makes it the hub's expanded module.
+    effect(() => {
+      const m = this.module();
+      if (!this.editing()) untracked(() => this.state.setFocus(m.id));
+    });
+  }
+
   ngDoCheck(): void {
     // Answers are snapshotted when an edit session starts, before anything is changed.
     if (this.editing()) this.state.beginEdit();
@@ -181,19 +189,17 @@ export class QuestionPage implements DoCheck {
       });
       return;
     }
-    const q = this.qid();
     const m = this.module();
-    this.state.markAnswered(q);
+    this.state.markAnswered(this.qid());
+    // Next unanswered question after this one, then any earlier one still open.
     const i = this.index();
-    if (i < m.questions.length - 1) {
-      this.router.navigate(['/q', m.questions[i + 1]]);
-      return;
-    }
-    const open = m.questions.find((x) => !this.state.isAnswered(x));
+    const ordered = [...m.questions.slice(i + 1), ...m.questions.slice(0, i)];
+    const open = ordered.find((x) => !this.state.isAnswered(x));
     if (open) {
       this.router.navigate(['/q', open]);
       return;
     }
+    // Module done: hub focus falls back to the first incomplete module in order.
     this.state.completeModule(m.id);
     this.router.navigate(['/']);
   }

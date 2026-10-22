@@ -16,6 +16,7 @@ interface Persisted {
   answered: QuestionId[];
   completed: ModuleId[];
   completedAt: string | null;
+  focus?: ModuleId | null;
 }
 
 export type ModuleState = 'done' | 'current' | 'upcoming';
@@ -26,6 +27,8 @@ export class FlowState {
   answers: Answers = demoAnswers();
   readonly answered = signal<ReadonlySet<QuestionId>>(new Set());
   readonly completed = signal<ReadonlySet<ModuleId>>(new Set());
+  /** Module the user chose to open on the hub (null = first incomplete). */
+  readonly focus = signal<ModuleId | null>(null);
   completedAt: string | null = null;
 
   private lastSaved = '';
@@ -42,13 +45,27 @@ export class FlowState {
 
   readonly doneCount = computed(() => this.completed().size);
 
-  readonly currentModule = computed<FlowModule | null>(
+  /** First incomplete module in order. */
+  readonly firstOpenModule = computed<FlowModule | null>(
     () => MODULES.find((m) => !this.completed().has(m.id)) ?? null,
   );
 
-  readonly minutesLeft = computed(() =>
-    MODULES.filter((m) => !this.completed().has(m.id)).reduce((s, m) => s + m.minutes, 0),
-  );
+  /** The single expanded module on the hub: the user's focus if still open, else the first open one. */
+  readonly currentModule = computed<FlowModule | null>(() => {
+    const f = this.focus();
+    const fm = f ? MODULES.find((m) => m.id === f) : undefined;
+    if (fm && !this.completed().has(fm.id)) return fm;
+    return this.firstOpenModule();
+  });
+
+  /** Remaining minutes; partly answered modules count proportionally (rounded up, min 1). */
+  readonly minutesLeft = computed(() => {
+    const answered = this.answered();
+    return MODULES.filter((m) => !this.completed().has(m.id)).reduce((sum, m) => {
+      const open = m.questions.filter((q) => !answered.has(q)).length;
+      return sum + Math.max(1, Math.ceil((m.minutes * open) / m.questions.length));
+    }, 0);
+  });
 
   readonly started = computed(() => this.answered().size > 0 || this.completed().size > 0);
 
@@ -61,12 +78,28 @@ export class FlowState {
     return this.answered().has(q);
   }
 
+  answeredCount(m: FlowModule): number {
+    const a = this.answered();
+    return m.questions.filter((q) => a.has(q)).length;
+  }
+
+  /** First unanswered question in a module, or null if all are answered. */
+  firstOpenQuestion(m: FlowModule): QuestionId | null {
+    return m.questions.find((q) => !this.answered().has(q)) ?? null;
+  }
+
+  /** Expand a module on the hub (only open modules can take focus). */
+  setFocus(id: ModuleId): void {
+    if (this.completed().has(id) || this.focus() === id) return;
+    this.focus.set(id);
+    this.save();
+  }
+
   /** Where the hub's Continue button goes. */
   nextTarget(): string[] {
     const m = this.currentModule();
     if (!m) return ['/review'];
-    const q = m.questions.find((x) => !this.answered().has(x)) ?? m.questions[0];
-    return ['/q', q];
+    return ['/q', this.firstOpenQuestion(m) ?? m.questions[0]];
   }
 
   // ---- mutations -----------------------------------------------------------
@@ -76,8 +109,10 @@ export class FlowState {
     this.save();
   }
 
+  /** Completing a module hands focus back to the first incomplete module in order. */
   completeModule(id: ModuleId): void {
     this.completed.update((s) => new Set(s).add(id));
+    if (this.focus() === id) this.focus.set(null);
     this.save();
   }
 
@@ -118,6 +153,7 @@ export class FlowState {
     this.answers = demoAnswers();
     this.answered.set(new Set());
     this.completed.set(new Set());
+    this.focus.set(null);
     this.completedAt = null;
     this.save();
   }
@@ -143,6 +179,7 @@ export class FlowState {
       answered: [...this.answered()],
       completed: [...this.completed()],
       completedAt: this.completedAt,
+      focus: this.focus(),
     };
     return JSON.stringify(data);
   }
@@ -159,6 +196,7 @@ export class FlowState {
       }
       this.answered.set(new Set(data.answered.filter((q) => ALL_QUESTIONS.includes(q))));
       this.completed.set(new Set(data.completed));
+      this.focus.set(data.focus ?? null);
       this.completedAt = data.completedAt;
       this.lastSaved = this.serialize();
     } catch {

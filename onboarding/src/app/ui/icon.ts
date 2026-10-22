@@ -6,6 +6,8 @@ import { DomSanitizer } from '@angular/platform-browser';
  * Colours are replaced with currentColor so they follow the token in CSS.
  */
 const ICONS: Record<string, string> = {
+  // arrow-back | Size=lg-24, Style=outline
+  'arrow-back': `<svg viewBox="0 0 24 24" fill="none"><path d="M21.5 12H2.99999M2.99999 12H3.49999M10 5L2.99999 12L10 19" stroke-miterlimit="10" stroke-linecap="square" stroke="currentColor"/></svg>`,
   // close | Size=lg-24, Style=outline
   close: `<svg viewBox="0 0 24 24" fill="none"><path d="M19.5 4.5L4.5 19.5M19.5 19.5L4.5 4.5" stroke-miterlimit="10" stroke-linecap="square" stroke="currentColor"/></svg>`,
   // chevron-right | Size=md-16

@@ -50,9 +50,11 @@ export class HubPage {
     // Read the signals so the computed re-evaluates.
     this.state.answered();
     this.state.completed();
+    this.state.focus();
     return MODULES.map((m, i) => {
       const st = this.state.moduleState(m);
       const count = m.questions.length;
+      const answered = this.state.answeredCount(m);
       const base: TimelineMilestone = {
         number: i + 1,
         title: m.title,
@@ -60,12 +62,22 @@ export class HubPage {
         subtitle:
           st === 'done'
             ? 'Completed'
-            : `${count} ${count === 1 ? 'question' : 'questions'} · About ${m.minutes} min`,
-        link: ['/q', m.questions[0]],
-        queryParams: st === 'done' ? { edit: '1' } : undefined,
+            : answered > 0
+              ? `${answered} of ${count} answered`
+              : `${count} ${count === 1 ? 'question' : 'questions'} · About ${m.minutes} min`,
       };
+      if (st === 'done') {
+        // Completed modules open in edit mode.
+        base.link = ['/q', m.questions[0]];
+        base.queryParams = { edit: '1' };
+        base.chevron = 'right';
+      } else {
+        // Open modules expand in place; the expanded one shows its questions.
+        base.action = () => this.state.setFocus(m.id);
+        base.chevron = st === 'current' ? 'up' : 'down';
+      }
       if (st === 'current') {
-        const firstOpen = m.questions.find((q) => !this.state.isAnswered(q));
+        const firstOpen = this.state.firstOpenQuestion(m);
         base.tag = `About ${m.minutes} min`;
         base.tasks = m.questions.map((q) => ({
           title: TASK_NAMES[q],
