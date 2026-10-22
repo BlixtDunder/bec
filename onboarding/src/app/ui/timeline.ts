@@ -9,6 +9,7 @@ export interface TimelineTask {
   subtitle: string;
   state: 'done' | 'next' | 'later';
   link: unknown[];
+  queryParams?: Record<string, string>;
 }
 
 export interface TimelineMilestone {
@@ -77,7 +78,7 @@ export interface TimelineMilestone {
               <span class="tasks-line"></span>
               @for (t of m.tasks; track t.title) {
                 <li>
-                  <a class="task" [routerLink]="t.link" matRipple>
+                  <a class="task" [routerLink]="t.link" [queryParams]="t.queryParams ?? null" matRipple>
                     <span class="sub-marker">
                       @if (t.state === 'done') {
                         <span class="done-disc"><ds-icon name="checkmark-round" [size]="16" /></span>

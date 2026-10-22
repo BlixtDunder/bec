@@ -27,6 +27,10 @@ import { DsTimeline, TimelineMilestone } from '../ui/timeline';
 export class HubPage {
   protected readonly state = inject(FlowState);
 
+  constructor() {
+    this.state.clearEdit();
+  }
+
   protected readonly tag = computed(() => {
     const n = this.state.doneCount();
     return n > 0 ? `${n} of ${MODULES.length} done` : null;
@@ -68,6 +72,7 @@ export class HubPage {
           subtitle: 'About 1 min',
           state: this.state.isAnswered(q) ? 'done' : q === firstOpen ? 'next' : 'later',
           link: ['/q', q],
+          queryParams: this.state.isAnswered(q) ? { edit: '1' } : undefined,
         }));
       }
       return base;

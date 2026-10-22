@@ -81,6 +81,34 @@ export class FlowState {
     this.save();
   }
 
+  // ---- edit sessions -------------------------------------------------------
+
+  /** Answers as they were when the current edit session started (for Cancel). */
+  private editSnapshot: Answers | null = null;
+
+  /** Start an edit session unless one is already running. */
+  beginEdit(): void {
+    this.editSnapshot ??= structuredClone(this.answers);
+  }
+
+  /** End the edit session, keeping the edits. */
+  commitEdit(): void {
+    this.editSnapshot = null;
+    this.save();
+  }
+
+  /** End the edit session, restoring the answers from when it started. */
+  discardEdit(): void {
+    if (this.editSnapshot) this.answers = this.editSnapshot;
+    this.editSnapshot = null;
+    this.save();
+  }
+
+  /** Called when landing on the hub/review: any open session is stale. */
+  clearEdit(): void {
+    this.editSnapshot = null;
+  }
+
   markSent(): void {
     this.completedAt = new Date().toISOString();
     this.save();

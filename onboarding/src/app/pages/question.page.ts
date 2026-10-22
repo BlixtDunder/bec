@@ -100,8 +100,7 @@ export class QuestionPage implements DoCheck {
     return n > 1 ? `${this.index() + 1} of ${n}` : null;
   });
 
-  /** Snapshot for Cancel in edit mode. */
-  private snapshot: { qid: QuestionId; answers: Answers } | null = null;
+  protected readonly isLast = computed(() => this.index() === this.module().questions.length - 1);
 
   // Option lists
   protected readonly countries = COUNTRIES;
@@ -138,10 +137,8 @@ export class QuestionPage implements DoCheck {
   }
 
   ngDoCheck(): void {
-    const q = this.qid();
-    if (this.editing() && this.snapshot?.qid !== q) {
-      this.snapshot = { qid: q, answers: structuredClone(this.state.answers) };
-    }
+    // Answers are snapshotted when an edit session starts, before anything is changed.
+    if (this.editing()) this.state.beginEdit();
     this.state.persistIfChanged();
   }
 
@@ -176,6 +173,14 @@ export class QuestionPage implements DoCheck {
   // ---- navigation ----------------------------------------------------------
 
   protected next(): void {
+    if (this.editing()) {
+      // Edit mode walks the module, keeping the edit flags.
+      this.state.markAnswered(this.qid());
+      this.router.navigate(['/q', this.module().questions[this.index() + 1]], {
+        queryParams: this.route.snapshot.queryParams,
+      });
+      return;
+    }
     const q = this.qid();
     const m = this.module();
     this.state.markAnswered(q);
@@ -200,17 +205,15 @@ export class QuestionPage implements DoCheck {
   }
 
   protected saveChanges(): void {
+    const m = this.module();
     this.state.markAnswered(this.qid());
-    this.snapshot = null;
+    if (m.questions.every((q) => this.state.isAnswered(q))) this.state.completeModule(m.id);
+    this.state.commitEdit();
     this.router.navigateByUrl(this.origin());
   }
 
   protected cancel(): void {
-    if (this.snapshot) {
-      this.state.answers = this.snapshot.answers;
-      this.state.save();
-      this.snapshot = null;
-    }
+    this.state.discardEdit();
     this.router.navigateByUrl(this.origin());
   }
 

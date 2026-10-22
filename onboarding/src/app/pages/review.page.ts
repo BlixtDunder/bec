@@ -67,6 +67,10 @@ export class ReviewPage {
   private readonly router = inject(Router);
   protected readonly modules = MODULES;
 
+  constructor() {
+    this.state.clearEdit();
+  }
+
   protected summary(id: (typeof MODULES)[number]['id']): string {
     return summarize(id, this.state.answers);
   }

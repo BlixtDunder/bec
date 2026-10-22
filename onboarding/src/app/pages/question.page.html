@@ -170,7 +170,11 @@
 
   <ds-actions>
     @if (editing()) {
-      <button matButton="filled" type="button" (click)="saveChanges()">Save changes</button>
+      @if (isLast()) {
+        <button matButton="filled" type="button" (click)="saveChanges()">Save changes</button>
+      } @else {
+        <button matButton="filled" type="button" (click)="next()">Continue</button>
+      }
       <button matButton="text" type="button" (click)="cancel()">Cancel</button>
     } @else {
       <button matButton="filled" type="button" (click)="next()">Continue</button>
