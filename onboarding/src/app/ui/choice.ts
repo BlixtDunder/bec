@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
@@ -94,6 +94,7 @@ export class DsRadioCard {
           class="row"
           labelPosition="before"
           [checked]="value().includes(o.value)"
+          [disabled]="atLimit() && !value().includes(o.value)"
           (change)="toggle(o.value, $event.checked)"
         >
           @if (o.image) {
@@ -109,12 +110,21 @@ export class DsRadioCard {
   `,
   styles:
     CARD_STYLES +
-    `.empty { margin: 0; padding: var(--space-3) var(--space-2); color: var(--md-sys-color-on-surface-variant); text-align: center; }`,
+    `.empty { margin: 0; padding: var(--space-3) var(--space-2); color: var(--md-sys-color-on-surface-variant); text-align: center; }
+     /* M3 disabled: label + leading flag at 38% (used when the selection limit is reached) */
+     .row.mat-mdc-checkbox-disabled .lead, .row.mat-mdc-checkbox-disabled label { opacity: 0.38; }
+     .row.mat-mdc-checkbox-disabled { cursor: default; }`,
 })
 export class DsCheckboxCard {
   readonly heading = input<string | null>(null);
   readonly options = input.required<ChoiceOption[]>();
   readonly value = model<string[]>([]);
+  /** Maximum number of selections; unticked rows are disabled once it is reached. */
+  readonly max = input<number | null>(null);
+  protected readonly atLimit = computed(() => {
+    const m = this.max();
+    return m !== null && this.value().length >= m;
+  });
 
   protected toggle(v: string, checked: boolean): void {
     const cur = this.value().filter((x) => x !== v);

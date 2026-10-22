@@ -26,7 +26,16 @@
           (input)="countryQuery.set($any($event.target).value)"
         />
       </label>
-      <ds-checkbox-card class="large" [options]="filteredFlags()" [(value)]="a.citizenships" />
+      @if (pinnedCountries().length) {
+        <ds-checkbox-card class="large" heading="Selected" [options]="pinnedCountries()" [max]="maxCitizenships" [(value)]="a.citizenships" />
+      }
+      <ds-checkbox-card
+        class="large"
+        [heading]="a.citizenships.length >= maxCitizenships ? 'You’ve chosen 3. Remove one to choose another.' : 'Choose up to 3 countries'"
+        [options]="otherCountries()"
+        [max]="maxCitizenships"
+        [(value)]="a.citizenships"
+      />
     }
 
     @case ('q4') {

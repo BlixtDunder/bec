@@ -121,8 +121,11 @@ export class QuestionPage implements DoCheck {
     { value: 'no', label: 'No, I don’t want information to be shared' },
   ];
 
-  // Q3 search
+  // Q3 citizenship: max 3; countries chosen before opening the screen are pinned on top.
+  protected readonly maxCitizenships = 3;
   protected readonly countryQuery = signal('');
+  /** Snapshot taken when Q3 opens, so rows don't jump while the user ticks and unticks. */
+  private readonly pinned = signal<string[]>([]);
   protected readonly filteredFlags = computed<ChoiceOption[]>(() => {
     const q = this.countryQuery().trim().toLowerCase();
     return FLAG_COUNTRIES.filter((c) => c.name.toLowerCase().includes(q)).map((c) => ({
@@ -131,6 +134,14 @@ export class QuestionPage implements DoCheck {
       image: c.flag,
     }));
   });
+  protected readonly pinnedCountries = computed<ChoiceOption[]>(() => {
+    const byName = new Map(this.filteredFlags().map((o) => [o.value, o]));
+    return this.pinned().map((n) => byName.get(n)).filter((o): o is ChoiceOption => !!o);
+  });
+  protected readonly otherCountries = computed<ChoiceOption[]>(() => {
+    const pinned = new Set(this.pinned());
+    return this.filteredFlags().filter((o) => !pinned.has(o.value));
+  });
 
   protected get a(): Answers {
     return this.state.answers;
@@ -138,6 +149,14 @@ export class QuestionPage implements DoCheck {
 
   constructor() {
     // Opening a question in an unfinished module makes it the hub's expanded module.
+    effect(() => {
+      if (this.qid() === 'q3') {
+        untracked(() => {
+          this.pinned.set([...this.a.citizenships]);
+          this.countryQuery.set('');
+        });
+      }
+    });
     effect(() => {
       const m = this.module();
       if (!this.editing()) untracked(() => this.state.setFocus(m.id));
