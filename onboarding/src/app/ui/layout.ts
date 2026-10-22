@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, inject, input } from '@angular/core';
 import { NavDirection } from '../data/nav-direction';
 import { RouterLink } from '@angular/router';
 import { MatRippleModule } from '@angular/material/core';
@@ -167,9 +167,11 @@ export class DsAlert {
 }
 
 /**
- * Bottom actions band: padding 16/16/24/16, 8px gap. Pinned to the bottom of
- * the viewport; content scrolls underneath it. The 16px top padding fades from
- * transparent to the page background so content visibly slides under.
+ * Bottom actions band: padding 16/16/24/16, 8px gap. Fixed to the bottom of the
+ * viewport (any screen height), constrained to the app column; content scrolls
+ * underneath it. Its measured height is published as --actions-h so the screen
+ * can reserve that space. The 16px top padding fades from transparent to the
+ * page background so content visibly slides under.
  */
 @Component({
   selector: 'ds-actions',
@@ -179,8 +181,10 @@ export class DsAlert {
     :host {
       display: flex; flex-direction: column; gap: var(--space-1);
       padding: var(--space-2) var(--space-2) calc(var(--space-3) + env(safe-area-inset-bottom));
-      flex: none;
-      position: sticky; bottom: 0; z-index: 1;
+      position: fixed; z-index: 2;
+      bottom: 0; left: 0; right: 0;
+      width: 100%; max-width: 420px; margin: 0 auto;
+      box-sizing: border-box;
       background: linear-gradient(
         to bottom,
         color-mix(in srgb, var(--md-sys-color-surface) 0%, transparent) 0,
@@ -190,7 +194,22 @@ export class DsAlert {
     :host ::ng-deep .mat-mdc-button-base { width: 100%; }
   `,
 })
-export class DsActions {}
+export class DsActions implements AfterViewInit, OnDestroy {
+  private readonly el = inject(ElementRef<HTMLElement>);
+  private observer?: ResizeObserver;
+
+  ngAfterViewInit(): void {
+    const root = document.documentElement;
+    const publish = () => root.style.setProperty('--actions-h', `${this.el.nativeElement.offsetHeight}px`);
+    publish();
+    this.observer = new ResizeObserver(publish);
+    this.observer.observe(this.el.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.observer?.disconnect();
+  }
+}
 
 /** Screen scaffold: content (24/16/16/16, gap 24) fills the space above the actions. */
 @Component({
@@ -207,7 +226,8 @@ export class DsActions {}
       flex: 1;
       display: flex; flex-direction: column;
       gap: var(--space-3);
-      padding: var(--space-3) var(--space-2) var(--space-2);
+      /* bottom: 16px + the fixed actions band, so the last content scrolls clear of it */
+      padding: var(--space-3) var(--space-2) calc(var(--space-2) + var(--actions-h, 0px));
     }
   `,
 })
