@@ -1,0 +1,56 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.subhead {
+  margin: 0;
+  color: var(--md-sys-color-on-surface);
+}
+
+// DS Search bar: white pill, 56px, leading 48px icon button
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-0-5);
+  height: 56px;
+  padding: var(--space-0-5);
+  background: var(--md-sys-color-secondary-container);
+  border-radius: var(--space-4);
+  cursor: text;
+
+  &:focus-within {
+    box-shadow: inset 0 0 0 2px var(--md-sys-color-primary);
+  }
+
+  .search-icon {
+    width: 48px;
+    height: 48px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    padding: 0 var(--space-2) 0 0;
+    color: var(--md-sys-color-on-surface);
+    font-family: var(--font);
+    letter-spacing: 0.15px;
+
+    &::placeholder {
+      color: var(--md-sys-color-on-surface-variant);
+      opacity: 1;
+    }
+    &::-webkit-search-cancel-button {
+      cursor: pointer;
+    }
+  }
+}
