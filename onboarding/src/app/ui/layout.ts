@@ -158,7 +158,11 @@ export class DsAlert {
   readonly heading = input.required<string>();
 }
 
-/** Bottom actions band: padding 16/16/24/16, 8px gap. */
+/**
+ * Bottom actions band: padding 16/16/24/16, 8px gap. Pinned to the bottom of
+ * the viewport; content scrolls underneath it. The 16px top padding fades from
+ * transparent to the page background so content visibly slides under.
+ */
 @Component({
   selector: 'ds-actions',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -166,8 +170,14 @@ export class DsAlert {
   styles: `
     :host {
       display: flex; flex-direction: column; gap: var(--space-1);
-      padding: var(--space-2) var(--space-2) var(--space-3);
+      padding: var(--space-2) var(--space-2) calc(var(--space-3) + env(safe-area-inset-bottom));
       flex: none;
+      position: sticky; bottom: 0; z-index: 1;
+      background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--md-sys-color-surface) 0%, transparent) 0,
+        var(--md-sys-color-surface) var(--space-2)
+      );
     }
     :host ::ng-deep .mat-mdc-button-base { width: 100%; }
   `,
