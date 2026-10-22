@@ -25,13 +25,11 @@ import { DsIcon } from '../ui/icon';
           @for (m of modules; track m.id) {
             <li>
               <a class="row" matRipple [routerLink]="['/q', m.questions[0]]" [queryParams]="{ edit: 1, from: 'review' }">
-                <span class="inner">
-                  <span class="text">
-                    <span class="t-body-large-medium headline">{{ m.title }}</span>
-                    <span class="t-body-medium supporting">{{ summary(m.id) }}</span>
-                  </span>
-                  <ds-icon name="chevron-right" [size]="16" />
+                <span class="text">
+                  <span class="t-body-large-medium headline">{{ m.title }}</span>
+                  <span class="t-body-medium supporting">{{ summary(m.id) }}</span>
                 </span>
+                <ds-icon name="chevron-right" [size]="16" />
               </a>
             </li>
           }
@@ -52,14 +50,13 @@ import { DsIcon } from '../ui/icon';
     .title-header { margin: 0; padding: var(--space-2) var(--space-2) var(--space-1); color: var(--md-sys-color-on-surface-variant); }
     ul { list-style: none; margin: 0; padding: 0; }
     .row {
-      display: block;
+      display: flex; align-items: center; gap: var(--space-2);
       min-height: 88px; padding: var(--space-2);
       color: inherit; text-decoration: none; position: relative;
       transition: background-color 120ms ease-out;
     }
     .row:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent); }
-    .inner { display: flex; align-items: center; gap: var(--space-2); }
-    .text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-0-5); max-width: 288px; }
+    .text { align-self: flex-start; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-0-5); max-width: 288px; }
     .headline { color: var(--md-sys-color-on-surface); }
     .supporting { color: var(--md-sys-color-on-surface-variant); }
     ds-icon { color: var(--md-sys-color-on-surface); margin-left: auto; }
