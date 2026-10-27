@@ -60,8 +60,6 @@ export const FLAG_COUNTRIES: { name: string; flag: string }[] = COUNTRY_LIST.map
   flag: `flags/1x1/${c.code}.svg`,
 }));
 
-export const COUNTRY_CODES = ['+45', '+46', '+47', '+358', '+354', '+49', '+44', '+1'];
-
 export const FREQUENCIES = ['Every week', 'Every 2 weeks', 'Every month', 'Every quarter', 'Every year'];
 
 export const USAGE_OPTIONS = [

@@ -8,7 +8,6 @@ import {
   Answers,
   CONNECTION_TYPES,
   COUNTRIES,
-  COUNTRY_CODES,
   EMPLOYMENT_OPTIONS,
   FLAG_COUNTRIES,
   FREQUENCIES,
@@ -23,6 +22,7 @@ import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
 import { DsActions, DsAlert, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsField } from '../ui/field';
+import { DsPhoneField } from '../ui/phone-field';
 import { ChoiceOption, DsCheckboxCard, DsRadioCard, DsRadioGroupCard } from '../ui/choice';
 import { DsUploadCard } from '../ui/upload';
 import { DsIcon } from '../ui/icon';
@@ -69,6 +69,7 @@ const COPY: Record<QuestionId, QuestionCopy> = {
     DsActions,
     DsAlert,
     DsField,
+    DsPhoneField,
     DsRadioCard,
     DsCheckboxCard,
     DsRadioGroupCard,
@@ -106,7 +107,6 @@ export class QuestionPage implements DoCheck {
 
   // Option lists
   protected readonly countries = COUNTRIES;
-  protected readonly countryCodes = COUNTRY_CODES;
   protected readonly frequencies = FREQUENCIES;
   protected readonly idTypes = ID_TYPES;
   protected readonly addressDocTypes = ADDRESS_DOC_TYPES;

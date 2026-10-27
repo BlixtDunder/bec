@@ -4,8 +4,7 @@
 
   @switch (qid()) {
     @case ('q1') {
-      <ds-field label="Country code" [options]="countryCodes" [(value)]="a.phoneCode" />
-      <ds-field label="Mobile number" [(value)]="a.phone" inputmode="tel" type="tel" autocomplete="tel-national" />
+      <ds-phone-field [(code)]="a.phoneCode" [(number)]="a.phone" />
       <ds-field label="Email" [(value)]="a.email" inputmode="email" type="email" autocomplete="email" />
     }
 

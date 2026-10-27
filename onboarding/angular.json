@@ -51,7 +51,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["node_modules/intl-tel-input/dist/css/intlTelInput-no-assets.css", "src/styles.scss"]
           },
           "configurations": {
             "production": {
