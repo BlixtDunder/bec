@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { map } from 'rxjs';
-import { COUNTRIES, NO_TIN_REASONS, TaxCountry, flagFor, tinHint } from '../data/flow';
+import { COUNTRIES, NO_TIN_REASONS, TaxCountry, flagFor, tinError, tinHint } from '../data/flow';
 import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
 import { DsActions, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
@@ -30,7 +30,7 @@ export interface RemovedTaxCountry {
       <ds-task-bar title="Tax" [back]="true" [closeAction]="cancelFn" />
       <ds-page-header [tag]="tag()" [title]="isEdit() ? 'Edit tax country' : 'Add a tax country'" />
 
-      <ds-field label="Country" [options]="countryOptions()" searchable [imageFor]="flagFor" [value]="country()" (valueChange)="country.set($event)" />
+      <ds-field label="Country" [options]="countryOptions()" searchable [imageFor]="flagFor" [value]="country()" (valueChange)="country.set($event)" [error]="show(countryError())" />
 
       @if (!noTin()) {
         <ds-field
@@ -38,6 +38,7 @@ export interface RemovedTaxCountry {
           [value]="tin()"
           (valueChange)="tin.set($event)"
           [supporting]="country() ? hint() : null"
+          [error]="show(tinErrorText())"
         />
       }
 
@@ -51,8 +52,11 @@ export interface RemovedTaxCountry {
             [value]="reason()"
             (valueChange)="reason.set($any($event))"
           />
+          @if (show(reasonError()); as msg) {
+            <p class="error t-body-small" role="alert">{{ msg }}</p>
+          }
           @if (reason() === 'not-received') {
-            <ds-field label="Tell us why" [value]="why()" (valueChange)="why.set($event)" />
+            <ds-field label="Tell us why" [value]="why()" (valueChange)="why.set($event)" [error]="show(whyError())" />
           }
         </div>
       }
@@ -62,7 +66,7 @@ export interface RemovedTaxCountry {
       }
 
       <ds-actions>
-        <button matButton="filled" type="button" [disabled]="!valid()" (click)="save()">
+        <button matButton="filled" type="button" (click)="save()">
           {{ isEdit() ? 'Save changes' : 'Add country' }}
         </button>
         <button matButton="text" type="button" (click)="cancel()">Cancel</button>
@@ -72,6 +76,7 @@ export interface RemovedTaxCountry {
   styles: `
     .group { display: flex; flex-direction: column; gap: var(--space-3); }
     .remove { width: 100%; }
+    .error { margin: calc(-1 * var(--space-2)) 0 0; padding: 0 var(--space-2); color: var(--md-sys-color-error); }
   `,
 })
 export class TaxCountryPage {
@@ -114,14 +119,29 @@ export class TaxCountryPage {
     NO_TIN_REASONS.map((r) => ({ value: r.value, label: r.label(this.country() || 'The country') })),
   );
 
-  protected readonly valid = computed(() => {
-    if (!this.country()) return false;
-    if (!this.noTin()) return this.tin().trim().length > 0;
-    if (!this.reason()) return false;
-    return this.reason() !== 'not-received' || this.why().trim().length > 0;
-  });
+  // Validation: the button is always enabled; errors show after the first try and update as you type.
+  private readonly submitted = signal(false);
+  protected readonly countryError = computed(() => (this.country() ? null : 'Choose a country'));
+  protected readonly tinErrorText = computed(() => (this.noTin() ? null : tinError(this.country(), this.tin())));
+  protected readonly reasonError = computed(() => (this.noTin() && !this.reason() ? "Choose why you don't have a TIN" : null));
+  protected readonly whyError = computed(() =>
+    this.noTin() && this.reason() === 'not-received' && !this.why().trim() ? 'Tell us why you haven’t received one' : null,
+  );
+  private readonly valid = computed(
+    () => !this.countryError() && !this.tinErrorText() && !this.reasonError() && !this.whyError(),
+  );
+
+  protected show(msg: string | null): string | null {
+    return this.submitted() ? msg : null;
+  }
 
   protected save(): void {
+    this.submitted.set(true);
+    if (!this.valid()) {
+      // Bring the first problem into view once the errors have rendered.
+      setTimeout(() => document.querySelector('[aria-invalid="true"], .error')?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+      return;
+    }
     const item: TaxCountry = {
       country: this.country(),
       tin: this.noTin() ? '' : this.tin().trim(),

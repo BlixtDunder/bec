@@ -33,6 +33,7 @@ let nextId = 0;
       matAutocompleteOrigin
       #origin="matAutocompleteOrigin"
       [class.focused]="focused()"
+      [class.invalid]="!!error()"
       [class.collapsed]="collapsed()"
       (click)="activate()"
     >
@@ -48,6 +49,8 @@ let nextId = 0;
               class="value t-body-large"
               [id]="id"
               [value]="focused() ? query() : value()"
+              [attr.aria-invalid]="!!error()"
+              [attr.aria-describedby]="error() ? id + '-error' : null"
               [placeholder]="focused() ? value() : ''"
               autocomplete="off"
               role="combobox"
@@ -100,6 +103,8 @@ let nextId = 0;
               class="value t-body-large"
               [id]="id"
               [value]="value()"
+              [attr.aria-invalid]="!!error()"
+              [attr.aria-describedby]="error() ? id + '-error' : null"
               [attr.inputmode]="inputmode()"
               [attr.type]="type()"
               [attr.autocomplete]="autocomplete()"
@@ -116,7 +121,9 @@ let nextId = 0;
         }
       </div>
     </div>
-    @if (supporting()) {
+    @if (error()) {
+      <div class="supporting error t-body-small" [id]="id + '-error'" role="alert">{{ error() }}</div>
+    } @else if (supporting()) {
       <div class="supporting t-body-small">{{ supporting() }}</div>
     }
   `,
@@ -132,6 +139,7 @@ let nextId = 0;
       transition: box-shadow 120ms ease-out;
     }
     .wrapper.focused { box-shadow: inset 0 0 0 2px var(--md-sys-color-primary); }
+    .wrapper.invalid { box-shadow: inset 0 0 0 2px var(--md-sys-color-error); }
     .content { display: flex; align-items: center; gap: var(--space-1-5); min-height: 48px; }
     .leading-image {
       width: 24px; height: 24px; border-radius: 50%; flex: none; object-fit: cover;
@@ -173,6 +181,7 @@ let nextId = 0;
       padding: var(--space-0-5) var(--space-2) 0;
       color: var(--md-sys-color-on-surface-variant);
     }
+    .supporting.error { color: var(--md-sys-color-error); }
     :host:has(.overlay-select) .wrapper { cursor: pointer; }
     .overlay-select {
       position: absolute; inset: 0; width: 100%; height: 100%;
@@ -194,6 +203,8 @@ export class DsField {
   readonly searchable = input(false, { transform: (v: boolean | '') => v !== false });
   readonly suffix = input<string | null>(null);
   readonly supporting = input<string | null>(null);
+  /** Validation message: red outline, replaces the supporting text. */
+  readonly error = input<string | null>(null);
   readonly inputmode = input<string | null>(null);
   readonly type = input<string>('text');
   readonly autocomplete = input<string | null>(null);

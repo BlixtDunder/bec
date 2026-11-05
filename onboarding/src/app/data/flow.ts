@@ -92,6 +92,30 @@ export function tinHint(country: string): string {
   return TIN_HINTS[country] ?? `As shown on your tax documents from ${country}`;
 }
 
+/** Format checks for countries with a known TIN format; the value is checked without spaces and dashes. */
+const TIN_RULES: Record<string, { test: (v: string) => boolean; error: string }> = {
+  Sweden: { test: (v) => /^\d{12}$/.test(v), error: 'Swedish TINs have 12 digits, e.g. 19850101-1234' },
+  Norway: { test: (v) => /^\d{11}$/.test(v), error: 'Norwegian TINs have 11 digits, e.g. 010185 12345' },
+  Finland: { test: (v) => /^\d{6}[+A-Y]?\d{3}[0-9A-Y]$/i.test(v), error: 'Finnish TINs look like 010185-123A' },
+  Germany: { test: (v) => /^\d{11}$/.test(v), error: 'German TINs have 11 digits' },
+  'United States': { test: (v) => /^\d{9}$/.test(v), error: 'Enter your 9-digit SSN or ITIN' },
+  'United Kingdom': {
+    test: (v) => /^[A-Z]{2}\d{6}[A-D]$/i.test(v) || /^\d{10}$/.test(v),
+    error: 'Enter a National Insurance number (e.g. QQ123456C) or a 10-digit UTR',
+  },
+};
+
+/** Validation message for a TIN, or null if it looks right. */
+export function tinError(country: string, tin: string): string | null {
+  const raw = tin.trim();
+  if (!raw) return "Enter your TIN, or tick that you don't have one";
+  const v = raw.replace(/[\s-]/g, '');
+  const rule = TIN_RULES[country];
+  if (rule) return rule.test(v) ? null : rule.error;
+  if (!/^[A-Za-z0-9 ./-]+$/.test(raw)) return 'Use only letters, numbers, spaces and dashes';
+  return v.length >= 4 ? null : 'This TIN looks too short';
+}
+
 /** Supporting line for a tax-country row on Q4. */
 export function taxCountryLine(c: TaxCountry): string {
   if (!c.noTin) return `TIN ${c.tin}`;
