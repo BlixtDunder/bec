@@ -24,6 +24,9 @@ export function formatSize(bytes: number): string {
     <div class="header">
       <p class="t-label-xlarge heading">{{ heading() }}</p>
       <p class="t-body-medium hint">{{ hint() }}</p>
+      @if (error()) {
+        <p class="upload-error t-body-small" role="alert">{{ error() }}</p>
+      }
     </div>
     <div class="upload-area">
       <label
@@ -71,9 +74,6 @@ export function formatSize(bytes: number): string {
           </li>
         }
       </ul>
-    }
-    @if (error()) {
-      <p class="upload-error t-body-small" role="alert">{{ error() }}</p>
     }
   `,
   styles: `

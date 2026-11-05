@@ -234,6 +234,15 @@ button {
   max-width: none;
 }
 
+// Scrolling to a validation error keeps the question in view below the top edge
+.invalid, [aria-invalid='true'], .error { scroll-margin-top: var(--space-3); }
+
+// Leave-section dialog: M3 dialog surface (radius 28) on the page background
+.ds-dialog .mat-mdc-dialog-surface {
+  border-radius: 28px;
+  background: var(--md-sys-color-secondary-container);
+}
+
 // Conditional field reveal
 @keyframes ds-reveal {
   from { opacity: 0; transform: translateY(-6px); }

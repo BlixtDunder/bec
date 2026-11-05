@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRippleModule } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { map } from 'rxjs';
 import {
   ADDRESS_DOC_TYPES,
@@ -33,6 +34,7 @@ import { ChoiceOption, DsCheckboxCard, DsRadioCard, DsRadioGroupCard } from '../
 import { DsUploadCard } from '../ui/upload';
 import { DsIcon } from '../ui/icon';
 import { RemovedTaxCountry } from './tax-country.page';
+import { DsLeaveDialog, LeaveDialogData } from '../ui/leave-dialog';
 
 const opts = (list: string[]): ChoiceOption[] => list.map((v) => ({ value: v, label: v }));
 
@@ -95,6 +97,7 @@ export class QuestionPage implements DoCheck {
   private readonly router = inject(Router);
   private readonly nav = inject(NavDirection);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly qid = toSignal(
@@ -264,7 +267,7 @@ export class QuestionPage implements DoCheck {
     this.submitted.set(true);
     if (this.state.isComplete(this.qid())) return true;
     setTimeout(() =>
-      document.querySelector('[role="alert"], [aria-invalid="true"]')?.scrollIntoView({ block: 'center', behavior: 'smooth' }),
+      document.querySelector('.invalid, [aria-invalid="true"], .error')?.scrollIntoView({ block: 'start', behavior: 'smooth' }),
     );
     return false;
   }
@@ -289,11 +292,34 @@ export class QuestionPage implements DoCheck {
   }
 
   protected back(): void {
-    this.nav.back();
     const i = this.index();
-    if (i > 0) this.router.navigate(['/q', this.module().questions[i - 1]]);
-    else this.router.navigate(['/']);
+    if (i > 0) {
+      this.nav.back();
+      this.router.navigate(['/q', this.module().questions[i - 1]]);
+    } else {
+      this.leave();
+    }
   }
+
+  /** Back to the hub; asks first if this unfinished section has answers that would be lost. */
+  private leave(): void {
+    const go = () => {
+      this.nav.back();
+      this.router.navigate(['/']);
+    };
+    if (!this.state.hasUnsaved()) return go();
+    this.dialog
+      .open<DsLeaveDialog, LeaveDialogData, boolean>(DsLeaveDialog, {
+        data: { section: this.module().title },
+        panelClass: 'ds-dialog',
+        width: 'calc(min(100vw, 420px) - 48px)',
+        autoFocus: 'dialog',
+      })
+      .afterClosed()
+      .subscribe((leave) => leave && go());
+  }
+
+  protected readonly leaveFn = () => this.leave();
 
   protected saveChanges(): void {
     if (!this.validate()) return;

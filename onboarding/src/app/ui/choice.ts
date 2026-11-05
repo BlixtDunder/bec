@@ -48,7 +48,8 @@ const CARD_STYLES = `
   .row ::ng-deep .mdc-radio, .row ::ng-deep .mdc-checkbox { flex: none; margin: 0; }
   .lead { display: flex; align-items: center; gap: var(--space-2); }
   :host(.invalid) { box-shadow: inset 0 0 0 2px var(--md-sys-color-error); }
-  .card-error { margin: 0; padding: 0 var(--space-2) var(--space-2); color: var(--md-sys-color-error); }
+  .card-error { margin: 0; padding: 0 var(--space-2) var(--space-1); color: var(--md-sys-color-error); }
+  :host(.invalid) .title-header { padding-bottom: var(--space-0-5); }
   .lead img {
     width: 32px; height: 32px; border-radius: 50%; display: block; flex: none; object-fit: cover;
     /* keeps white flags (Finland, Japan…) edged on the white card */
@@ -56,7 +57,7 @@ const CARD_STYLES = `
   }
 `;
 
-/** Radio question card: title header (body/medium (medium)) + 72px rows, radio on the right; projected content follows the rows. */
+/** Radio question card: title header (body/medium (medium)) + 72px rows, radio on the right; projected content follows the rows. Errors sit under the question, so long lists don't hide them. */
 @Component({
   selector: 'ds-radio-card',
   host: { '[class.invalid]': '!!error()' },
@@ -66,6 +67,9 @@ const CARD_STYLES = `
     @if (heading()) {
       <p class="title-header t-body-medium-medium">{{ heading() }}</p>
     }
+    @if (error()) {
+      <p class="card-error t-body-small" role="alert">{{ error() }}</p>
+    }
     <mat-radio-group [value]="value()" (change)="value.set($event.value)" [attr.aria-label]="heading()">
       @for (o of options(); track o.value) {
         <mat-radio-button class="row" labelPosition="before" [value]="o.value">
@@ -74,9 +78,6 @@ const CARD_STYLES = `
       }
     </mat-radio-group>
     <ng-content />
-    @if (error()) {
-      <p class="card-error t-body-small" role="alert">{{ error() }}</p>
-    }
   `,
   styles: CARD_STYLES,
 })
@@ -98,6 +99,9 @@ export class DsRadioCard {
     @if (heading()) {
       <p class="title-header t-body-medium-medium">{{ heading() }}</p>
     }
+    @if (error()) {
+      <p class="card-error t-body-small" role="alert">{{ error() }}</p>
+    }
     <div role="group" [attr.aria-label]="heading()">
       @for (o of options(); track o.value) {
         <mat-checkbox
@@ -117,9 +121,6 @@ export class DsRadioCard {
         <p class="empty t-body-medium">No matches</p>
       }
     </div>
-    @if (error()) {
-      <p class="card-error t-body-small" role="alert">{{ error() }}</p>
-    }
   `,
   styles:
     CARD_STYLES +
@@ -155,14 +156,14 @@ export class DsCheckboxCard {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p class="title t-body-large">{{ heading() }}</p>
+    @if (error()) {
+      <p class="group-error t-body-small" role="alert">{{ error() }}</p>
+    }
     <mat-radio-group class="group" [value]="value()" (change)="value.set($event.value)" [attr.aria-label]="heading()">
       @for (o of options(); track o.value) {
         <mat-radio-button [value]="o.value">{{ o.label }}</mat-radio-button>
       }
     </mat-radio-group>
-    @if (error()) {
-      <p class="group-error t-body-small" role="alert">{{ error() }}</p>
-    }
   `,
   styles: `
     :host {

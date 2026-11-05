@@ -44,6 +44,10 @@ export class FlowState {
   private committedAnswered: ReadonlySet<QuestionId> = new Set();
 
   constructor() {
+    // Closing or reloading the tab mid-section: the browser's own "Leave site?" warning.
+    window.addEventListener('beforeunload', (e) => {
+      if (this.hasUnsaved()) e.preventDefault();
+    });
     if (this.resetRequested()) {
       this.reset();
     } else {
@@ -130,10 +134,14 @@ export class FlowState {
    * completed sections are saved, so the section starts over next time.
    */
   discardOpenSection(): void {
-    const m = this.currentModule();
-    if (!m || !m.questions.some((q) => this.answered().has(q))) return;
+    if (!this.hasUnsaved()) return;
     this.answers = structuredClone(this.committedAnswers);
     this.answered.set(new Set(this.committedAnswered));
+  }
+
+  /** Answers changed since the last saved section (they'd be lost by leaving). */
+  hasUnsaved(): boolean {
+    return JSON.stringify(this.answers) !== JSON.stringify(this.committedAnswers);
   }
 
   /** Whether every required answer on a question is given. */

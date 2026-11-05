@@ -146,7 +146,7 @@ export class TaxCountryPage {
     this.submitted.set(true);
     if (!this.valid()) {
       // Bring the first problem into view once the errors have rendered.
-      setTimeout(() => document.querySelector('[aria-invalid="true"], .error')?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+      setTimeout(() => document.querySelector('.invalid, [aria-invalid="true"], .error')?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
       return;
     }
     const item: TaxCountry = {
