@@ -3,7 +3,7 @@ export type QuestionId =
   | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7' | 'q9' | 'q8' | 'q10'
   | 'q11' | 'q12' | 'q13' | 'q14' | 'q15' | 'q16' | 'q17' | 'q18' | 'q19';
 
-export type ModuleId = 'contact' | 'tax' | 'bank' | 'money' | 'id' | 'docs' | 'consents';
+export type ModuleId = 'about' | 'bank' | 'money' | 'docs' | 'consents';
 
 export interface FlowModule {
   id: ModuleId;
@@ -12,13 +12,12 @@ export interface FlowModule {
   questions: QuestionId[];
 }
 
+/** Five sections (Figma "About you" flow 427:19271); the questions themselves are unchanged. */
 export const MODULES: FlowModule[] = [
-  { id: 'contact', title: 'Contact details', minutes: 1, questions: ['q1'] },
-  { id: 'tax', title: 'Tax', minutes: 2, questions: ['q2', 'q3', 'q4'] },
-  { id: 'bank', title: 'Use of the bank', minutes: 3, questions: ['q5', 'q6', 'q7', 'q9', 'q8'] },
+  { id: 'about', title: 'About you', minutes: 3, questions: ['q1', 'q2', 'q3', 'q4'] },
+  { id: 'bank', title: 'How you will use the bank', minutes: 3, questions: ['q5', 'q6', 'q7', 'q9', 'q8'] },
   { id: 'money', title: 'Money in and out', minutes: 4, questions: ['q10', 'q11', 'q12', 'q13', 'q14'] },
-  { id: 'id', title: 'ID', minutes: 2, questions: ['q15', 'q16'] },
-  { id: 'docs', title: 'Documents', minutes: 1, questions: ['q17'] },
+  { id: 'docs', title: 'Documents', minutes: 3, questions: ['q15', 'q16', 'q17'] },
   { id: 'consents', title: 'Consents', minutes: 1, questions: ['q18', 'q19'] },
 ];
 

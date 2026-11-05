@@ -13,17 +13,15 @@ function friendlyFile(f: UploadedFile): string {
 /** One-line summaries for the Review screen, generated from the answers. */
 export function summarize(id: ModuleId, a: Answers): string {
   switch (id) {
-    case 'contact':
-      return [`${a.phoneCode} ${a.phone}`.trim(), a.email].filter(Boolean).join(' · ');
-    case 'tax': {
-      const parts: string[] = [];
+    case 'about': {
+      const parts: string[] = [`${a.phoneCode} ${a.phone}`.trim()];
       if (a.birthCity || a.birthCountry) parts.push(`Born in ${a.birthCity || a.birthCountry}`);
       const res = [
         ...(a.taxDk === 'yes' ? ['Denmark'] : []),
         ...(a.taxOther === 'yes' ? a.taxCountries.map((c) => c.country) : []),
       ];
       if (res.length) parts.push(`Tax resident in ${joinAnd(res)}`);
-      return parts.join(' · ');
+      return parts.filter(Boolean).join(' · ');
     }
     case 'bank': {
       const parts = [a.mainBank === 'yes' ? 'Main bank' : 'Not main bank'];
@@ -39,10 +37,11 @@ export function summarize(id: ModuleId, a: Answers): string {
       if (a.transfersOut === 'yes') parts.push(`Transfers to ${a.transfersOutCountry || 'abroad'}`);
       return parts.length ? parts.join(' · ') : 'No cash or foreign transfers';
     }
-    case 'id':
-      return [a.idType, a.addressDocType].filter(Boolean).join(' · ');
-    case 'docs':
-      return a.adviserFiles.length ? a.adviserFiles.map(friendlyFile).join(' · ') : 'No documents added';
+    case 'docs': {
+      const parts = [a.idType, a.addressDocType].filter(Boolean);
+      if (a.adviserFiles.length) parts.push(a.adviserFiles.map(friendlyFile).join(', '));
+      return parts.join(' · ') || 'No documents added';
+    }
     case 'consents': {
       const yn = (v: string) => (v === 'yes' ? 'yes' : 'no');
       return `Marketing: ${yn(a.marketing)} · Group: ${yn(a.groupConsent)}`;

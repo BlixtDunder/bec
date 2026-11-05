@@ -11,7 +11,8 @@ import {
   isComplete,
 } from './flow';
 
-const STORAGE_KEY = 'bec-kyc-onboarding-v1';
+// v2: five sections (saved section progress from v1 doesn't map onto them)
+const STORAGE_KEY = 'bec-kyc-onboarding-v2';
 
 interface Persisted {
   answers: Answers;
