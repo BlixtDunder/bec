@@ -45,6 +45,35 @@ export const TASK_NAMES: Record<QuestionId, string> = {
   q19: 'Group consent',
 };
 
+/**
+ * Whether the customer has given any information on a question. Only filled
+ * questions get the green check on the hub; Continue on an empty page moves on
+ * without marking it.
+ */
+export function isFilled(q: QuestionId, a: Answers): boolean {
+  switch (q) {
+    case 'q1': return !!(a.phone || a.email);
+    case 'q2': return !!(a.birthCountry || a.birthCity);
+    case 'q3': return a.citizenships.length > 0;
+    case 'q4': return !!(a.taxDk || a.taxOther);
+    case 'q5': return a.usage.length > 0;
+    case 'q6': return !!(a.mainBank || a.otherBanks);
+    case 'q7': return a.employment.length > 0;
+    case 'q9': return !!a.regular;
+    case 'q8': return !!a.connections;
+    case 'q10': return !!(a.otherPaymentsTotal || a.otherPaymentsSource);
+    case 'q11': return !!a.cashDeposits;
+    case 'q12': return !!a.cashWithdrawals;
+    case 'q13': return !!a.transfersIn;
+    case 'q14': return !!a.transfersOut;
+    case 'q15': return a.idFiles.length > 0;
+    case 'q16': return a.addressFiles.length > 0;
+    case 'q17': return a.adviserFiles.length > 0 || !!a.adviserComment.trim();
+    case 'q18': return !!a.marketing;
+    case 'q19': return !!a.groupConsent;
+  }
+}
+
 export const ALL_QUESTIONS: QuestionId[] = MODULES.flatMap((m) => m.questions);
 
 export function moduleOf(q: QuestionId): FlowModule {

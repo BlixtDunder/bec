@@ -253,10 +253,18 @@ export class QuestionPage implements DoCheck {
     this.state.markAnswered(this.qid());
     // Next unanswered question after this one, then any earlier one still open.
     const i = this.index();
-    const ordered = [...m.questions.slice(i + 1), ...m.questions.slice(0, i)];
+    // A page left empty only moves forward, so skipping never loops back through empty pages.
+    const after = m.questions.slice(i + 1);
+    const ordered = this.state.isAnswered(this.qid()) ? [...after, ...m.questions.slice(0, i)] : after;
     const open = ordered.find((x) => !this.state.isAnswered(x));
     if (open) {
       this.router.navigate(['/q', open]);
+      return;
+    }
+    if (!this.state.isAnswered(this.qid())) {
+      // Last page left empty: back to the hub without completing the module.
+      this.nav.back();
+      this.router.navigate(['/']);
       return;
     }
     // Module done: hub focus falls back to the first incomplete module in order.
@@ -276,6 +284,7 @@ export class QuestionPage implements DoCheck {
     const m = this.module();
     this.state.markAnswered(this.qid());
     if (m.questions.every((q) => this.state.isAnswered(q))) this.state.completeModule(m.id);
+    else this.state.uncompleteModule(m.id);
     this.state.commitEdit();
     this.nav.back();
     this.router.navigateByUrl(this.origin());

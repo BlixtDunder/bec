@@ -8,6 +8,7 @@ import {
   QuestionId,
   demoAnswers,
   emptyAnswers,
+  isFilled,
 } from './flow';
 
 const STORAGE_KEY = 'bec-kyc-onboarding-v1';
@@ -115,8 +116,26 @@ export class FlowState {
 
   // ---- mutations -----------------------------------------------------------
 
+  /** Mark a question answered (green check) if the customer filled anything in, otherwise clear it. */
   markAnswered(q: QuestionId): void {
-    this.answered.update((s) => new Set(s).add(q));
+    const filled = isFilled(q, this.answers);
+    this.answered.update((s) => {
+      const next = new Set(s);
+      if (filled) next.add(q);
+      else next.delete(q);
+      return next;
+    });
+    this.save();
+  }
+
+  /** A completed module whose answers were emptied again is open once more. */
+  uncompleteModule(id: ModuleId): void {
+    if (!this.completed().has(id)) return;
+    this.completed.update((s) => {
+      const next = new Set(s);
+      next.delete(id);
+      return next;
+    });
     this.save();
   }
 
