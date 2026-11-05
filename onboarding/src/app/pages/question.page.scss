@@ -104,11 +104,11 @@
   }
 }
 
-// Text link: hugs its label, left-aligned with the rows (16px), not a full-width button
+// Text link: hugs its label, centred in the card (not a full-width button)
 .add-country {
   --mat-button-text-horizontal-padding: var(--space-2);
   display: flex;
-  margin-right: auto;
+  margin: 0 auto;
 
   ds-icon {
     margin-right: var(--space-1);
