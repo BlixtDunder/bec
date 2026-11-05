@@ -197,7 +197,6 @@ export class QuestionPage implements DoCheck {
   ngDoCheck(): void {
     // Answers are snapshotted when an edit session starts, before anything is changed.
     if (this.editing()) this.state.beginEdit();
-    this.state.persistIfChanged();
   }
 
   protected regularSelected(): string[] {
@@ -244,7 +243,6 @@ export class QuestionPage implements DoCheck {
       .onAction()
       .subscribe(() => {
         this.a.taxCountries.splice(index, 0, item satisfies TaxCountry);
-        this.state.save();
         this.cdr.markForCheck();
       });
   }

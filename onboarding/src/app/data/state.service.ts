@@ -38,6 +38,9 @@ export class FlowState {
   completedAt: string | null = null;
 
   private lastSaved = '';
+  /** Answers and checks as last saved, for throwing away an unfinished section. */
+  private committedAnswers: Answers = demoAnswers();
+  private committedAnswered: ReadonlySet<QuestionId> = new Set();
 
   constructor() {
     if (this.resetRequested()) {
@@ -111,7 +114,6 @@ export class FlowState {
   setFocus(id: ModuleId): void {
     if (this.completed().has(id) || this.focus() === id) return;
     this.focus.set(id);
-    this.save();
   }
 
   /** Where the hub's Continue button goes. */
@@ -121,6 +123,17 @@ export class FlowState {
   }
 
   // ---- mutations -----------------------------------------------------------
+
+  /**
+   * Leaving a section before it's finished throws its answers away: only
+   * completed sections are saved, so the section starts over next time.
+   */
+  discardOpenSection(): void {
+    const m = this.currentModule();
+    if (!m || !m.questions.some((q) => this.answered().has(q))) return;
+    this.answers = structuredClone(this.committedAnswers);
+    this.answered.set(new Set(this.committedAnswered));
+  }
 
   /** Whether every required answer on a question is given. */
   isComplete(q: QuestionId): boolean {
@@ -136,7 +149,6 @@ export class FlowState {
       else next.delete(q);
       return next;
     });
-    this.save();
   }
 
   /** A completed module whose answers were emptied again is open once more. */
@@ -147,14 +159,13 @@ export class FlowState {
       next.delete(id);
       return next;
     });
-    this.save();
   }
 
   /** Completing a module hands focus back to the first incomplete module in order. */
   completeModule(id: ModuleId): void {
     this.completed.update((s) => new Set(s).add(id));
     if (this.focus() === id) this.focus.set(null);
-    this.save();
+    this.commit();
   }
 
   // ---- edit sessions -------------------------------------------------------
@@ -170,14 +181,14 @@ export class FlowState {
   /** End the edit session, keeping the edits. */
   commitEdit(): void {
     this.editSnapshot = null;
-    this.save();
+    this.commit();
   }
 
   /** End the edit session, restoring the answers from when it started. */
   discardEdit(): void {
     if (this.editSnapshot) this.answers = this.editSnapshot;
     this.editSnapshot = null;
-    this.save();
+    this.commit();
   }
 
   /** Called when landing on the hub/review: any open session is stale. */
@@ -187,14 +198,14 @@ export class FlowState {
 
   markSent(): void {
     this.completedAt = new Date().toISOString();
-    this.save();
+    this.commit();
   }
 
   /** Start over with no answers (hub close X). `?reset` restores the demo answers instead. */
   clearAll(): void {
     this.reset();
     this.answers = emptyAnswers();
-    this.save();
+    this.commit();
   }
 
   reset(): void {
@@ -205,15 +216,16 @@ export class FlowState {
     this.sendAttempted.set(false);
     this.focus.set(null);
     this.completedAt = null;
-    this.save();
+    this.commit();
   }
 
-  /** Persist if the answer object has changed since the last save. */
-  persistIfChanged(): void {
-    if (this.serialize() !== this.lastSaved) this.save();
-  }
-
-  save(): void {
+  /**
+   * Write progress to storage. Answers are saved per section, not per question:
+   * this runs when a section is completed (or an edit is saved, or everything is cleared).
+   */
+  commit(): void {
+    this.committedAnswers = structuredClone(this.answers);
+    this.committedAnswered = new Set(this.answered());
     const json = this.serialize();
     this.lastSaved = json;
     try {
@@ -237,7 +249,7 @@ export class FlowState {
   private load(): void {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return this.save();
+      if (!raw) return this.commit();
       const data = JSON.parse(raw) as Persisted;
       this.answers = { ...demoAnswers(), ...data.answers };
       // Files still "uploading" when the page was closed are treated as uploaded.
@@ -249,6 +261,8 @@ export class FlowState {
       this.focus.set(data.focus ?? null);
       this.completedAt = data.completedAt;
       this.lastSaved = this.serialize();
+      this.committedAnswers = structuredClone(this.answers);
+      this.committedAnswered = new Set(this.answered());
     } catch {
       this.reset();
     }

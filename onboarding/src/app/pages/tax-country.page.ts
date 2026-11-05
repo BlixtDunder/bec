@@ -160,14 +160,12 @@ export class TaxCountryPage {
     const i = this.index();
     if (i === null) list.push(item);
     else list[i] = item;
-    this.state.save();
     this.backToQ4();
   }
 
   protected remove(): void {
     const i = this.index()!;
     const [item] = this.state.answers.taxCountries.splice(i, 1);
-    this.state.save();
     this.backToQ4({ index: i, item } satisfies RemovedTaxCountry);
   }
 

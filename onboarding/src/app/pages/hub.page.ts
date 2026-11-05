@@ -29,6 +29,7 @@ export class HubPage {
 
   constructor() {
     this.state.clearEdit();
+    this.state.discardOpenSection();
   }
 
   /** Close X starts the questionnaire over. */
