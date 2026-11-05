@@ -89,6 +89,13 @@ export class TaxCountryPage {
     this.route.paramMap.pipe(map((p) => (p.has('index') ? Number(p.get('index')) : null))),
     { requireSync: true },
   );
+  constructor() {
+    // Forced flow: the tax step must be the one in progress (or already answered).
+    if (!this.route.snapshot.queryParamMap.has('edit') && !this.state.canOpen('q4')) {
+      this.router.navigate(this.state.nextTarget(), { replaceUrl: true });
+    }
+  }
+
   protected readonly isEdit = computed(() => this.index() !== null);
   protected readonly tag = computed(() => (this.route.snapshot.queryParamMap.has('edit') ? 'Editing' : '3 of 3'));
 

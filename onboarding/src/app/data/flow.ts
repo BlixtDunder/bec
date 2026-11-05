@@ -76,6 +76,11 @@ export function isFilled(q: QuestionId, a: Answers): boolean {
 
 const set = (v: string) => v.trim().length > 0;
 
+/** An amount of nothing ("0", "0,00"…): the follow-up about its source isn't needed. */
+export function isZero(v: string): boolean {
+  return /^0+([.,]0+)?$/.test(v.trim());
+}
+
 /**
  * Whether every required answer on a question is given (follow-up fields
  * included). Sending to the bank needs all questions complete.
@@ -99,7 +104,7 @@ export function isComplete(q: QuestionId, a: Answers): boolean {
       );
     case 'q8':
       return a.connections === 'no' || (a.connections === 'yes' && set(a.connectionCountry) && a.connectionTypes.length > 0 && set(a.connectionText));
-    case 'q10': return set(a.otherPaymentsTotal) && (/^0+$/.test(a.otherPaymentsTotal.trim()) || set(a.otherPaymentsSource));
+    case 'q10': return set(a.otherPaymentsTotal) && (isZero(a.otherPaymentsTotal) || set(a.otherPaymentsSource));
     case 'q11':
       return a.cashDeposits === 'no' || (a.cashDeposits === 'yes' && set(a.depositsPerYear) && set(a.depositsTotal) && set(a.depositsSource));
     case 'q12':

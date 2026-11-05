@@ -8,7 +8,8 @@ export interface TimelineTask {
   title: string;
   subtitle: string;
   state: 'done' | 'next' | 'later';
-  link: unknown[];
+  /** Missing = locked (forced order): shown, but not tappable. */
+  link?: unknown[];
   queryParams?: Record<string, string>;
 }
 
@@ -96,7 +97,8 @@ export interface TimelineMilestone {
               <span class="tasks-line"></span>
               @for (t of m.tasks; track t.title) {
                 <li>
-                  <a class="task" [routerLink]="t.link" [queryParams]="t.queryParams ?? null" matRipple>
+                  @if (t.link) {
+                    <a class="task" [routerLink]="t.link" [queryParams]="t.queryParams ?? null" matRipple>
                     <span class="sub-marker">
                       @if (t.state === 'done') {
                         <span class="done-disc"><ds-icon name="checkmark-round" [size]="16" /></span>
@@ -112,6 +114,24 @@ export interface TimelineMilestone {
                       <ds-icon name="chevron-right" [size]="16" class="chevron" />
                     </span>
                   </a>
+                  } @else {
+                    <div class="task locked" aria-disabled="true">
+                    <span class="sub-marker">
+                      @if (t.state === 'done') {
+                        <span class="done-disc"><ds-icon name="checkmark-round" [size]="16" /></span>
+                      } @else {
+                        <span class="dot" [class.next]="t.state === 'next'"></span>
+                      }
+                    </span>
+                    <span class="task-item">
+                      <span class="text">
+                        <span class="t-body-large-medium title">{{ t.title }}</span>
+                        <span class="t-body-medium subtitle">{{ t.subtitle }}</span>
+                      </span>
+                      
+                    </span>
+                  </div>
+                  }
                 </li>
               }
             </ol>
@@ -163,6 +183,8 @@ export interface TimelineMilestone {
     .subtitle { color: var(--md-sys-color-on-surface-variant); }
     .chevron { color: var(--md-sys-color-on-surface); flex: none; transition: transform 200ms ease; }
     .chevron.up { transform: rotate(180deg); }
+    .task.locked { cursor: default; }
+    .task.locked:hover { background: none; }
 
     /* Question rows of the expanded module: same full-width list item, small marker on the rail. */
     .tasks { position: relative; animation: expand 220ms cubic-bezier(0.2, 0, 0, 1); }

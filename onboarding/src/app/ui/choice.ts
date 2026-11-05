@@ -47,6 +47,8 @@ const CARD_STYLES = `
   }
   .row ::ng-deep .mdc-radio, .row ::ng-deep .mdc-checkbox { flex: none; margin: 0; }
   .lead { display: flex; align-items: center; gap: var(--space-2); }
+  :host(.invalid) { box-shadow: inset 0 0 0 2px var(--md-sys-color-error); }
+  .card-error { margin: 0; padding: 0 var(--space-2) var(--space-2); color: var(--md-sys-color-error); }
   .lead img {
     width: 32px; height: 32px; border-radius: 50%; display: block; flex: none; object-fit: cover;
     /* keeps white flags (Finland, Japan…) edged on the white card */
@@ -57,6 +59,7 @@ const CARD_STYLES = `
 /** Radio question card: title header (body/medium (medium)) + 72px rows, radio on the right; projected content follows the rows. */
 @Component({
   selector: 'ds-radio-card',
+  host: { '[class.invalid]': '!!error()' },
   imports: [MatRadioModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -71,10 +74,15 @@ const CARD_STYLES = `
       }
     </mat-radio-group>
     <ng-content />
+    @if (error()) {
+      <p class="card-error t-body-small" role="alert">{{ error() }}</p>
+    }
   `,
   styles: CARD_STYLES,
 })
 export class DsRadioCard {
+  /** Validation message: red outline + message at the bottom of the card. */
+  readonly error = input<string | null>(null);
   readonly heading = input<string | null>(null);
   readonly options = input<ChoiceOption[]>(YES_NO);
   readonly value = model<string>('');
@@ -83,6 +91,7 @@ export class DsRadioCard {
 /** Checkbox card: title header + rows with the checkbox on the right; optional leading image. */
 @Component({
   selector: 'ds-checkbox-card',
+  host: { '[class.invalid]': '!!error()' },
   imports: [MatCheckboxModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -108,6 +117,9 @@ export class DsRadioCard {
         <p class="empty t-body-medium">No matches</p>
       }
     </div>
+    @if (error()) {
+      <p class="card-error t-body-small" role="alert">{{ error() }}</p>
+    }
   `,
   styles:
     CARD_STYLES +
@@ -117,6 +129,8 @@ export class DsRadioCard {
      .row.mat-mdc-checkbox-disabled { cursor: default; }`,
 })
 export class DsCheckboxCard {
+  /** Validation message: red outline + message at the bottom of the card. */
+  readonly error = input<string | null>(null);
   readonly heading = input<string | null>(null);
   readonly options = input.required<ChoiceOption[]>();
   readonly value = model<string[]>([]);
@@ -136,6 +150,7 @@ export class DsCheckboxCard {
 /** DS Radiobutton-Cards: padding 16, body/large title, radios on the left with labels. */
 @Component({
   selector: 'ds-radio-group-card',
+  host: { '[class.invalid]': '!!error()' },
   imports: [MatRadioModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -145,6 +160,9 @@ export class DsCheckboxCard {
         <mat-radio-button [value]="o.value">{{ o.label }}</mat-radio-button>
       }
     </mat-radio-group>
+    @if (error()) {
+      <p class="group-error t-body-small" role="alert">{{ error() }}</p>
+    }
   `,
   styles: `
     :host {
@@ -157,9 +175,13 @@ export class DsCheckboxCard {
     .group { display: flex; flex-direction: column; gap: 20px; }
     .group ::ng-deep .mdc-form-field { display: flex; align-items: center; gap: 2px; width: 100%; cursor: pointer; }
     .group ::ng-deep .mdc-form-field > .mdc-label { flex: 1; padding: 0; cursor: pointer; }
+    :host(.invalid) { box-shadow: inset 0 0 0 2px var(--md-sys-color-error); }
+    .group-error { margin: 0; color: var(--md-sys-color-error); }
   `,
 })
 export class DsRadioGroupCard {
+  /** Validation message: red outline + message at the bottom of the card. */
+  readonly error = input<string | null>(null);
   readonly heading = input.required<string>();
   readonly options = input<ChoiceOption[]>(YES_NO);
   readonly value = model<string>('');

@@ -5,12 +5,12 @@
   @switch (qid()) {
     @case ('q1') {
       <ds-phone-field [(code)]="a.phoneCode" [(number)]="a.phone" />
-      <ds-field label="Email" [(value)]="a.email" inputmode="email" type="email" autocomplete="email" />
+      <ds-field label="Email" [(value)]="a.email" [error]="err(!a.email.trim())" inputmode="email" type="email" autocomplete="email" />
     }
 
     @case ('q2') {
-      <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.birthCountry" />
-      <ds-field label="City" [(value)]="a.birthCity" />
+      <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.birthCountry" [error]="err(!a.birthCountry, 'Choose a country')" />
+      <ds-field label="City" [(value)]="a.birthCity" [error]="err(!a.birthCity.trim())" />
     }
 
     @case ('q3') {
@@ -34,12 +34,13 @@
         [options]="otherCountries()"
         [max]="maxCitizenships"
         [(value)]="a.citizenships"
+        [error]="err(!a.citizenships.length, 'Choose at least one country')"
       />
     }
 
     @case ('q4') {
-      <ds-radio-card heading="Are you resident in Denmark for tax purposes?" [(value)]="a.taxDk" />
-      <ds-radio-card heading="Are you resident in any other countries for tax purposes?" [(value)]="a.taxOther">
+      <ds-radio-card heading="Are you resident in Denmark for tax purposes?" [(value)]="a.taxDk" [error]="err(!a.taxDk, 'Choose an answer')" />
+      <ds-radio-card heading="Are you resident in any other countries for tax purposes?" [(value)]="a.taxOther" [error]="err(!a.taxOther, 'Choose an answer') || err(a.taxOther === 'yes' && !a.taxCountries.length, 'Add at least one tax country')">
         @if (a.taxOther === 'yes') {
           <div animate.enter="reveal" animate.leave="conceal">
             @if (a.taxCountries.length) {
@@ -65,34 +66,34 @@
     }
 
     @case ('q5') {
-      <ds-checkbox-card heading="Choose all that apply" [options]="usageOptions" [(value)]="a.usage" />
+      <ds-checkbox-card heading="Choose all that apply" [options]="usageOptions" [(value)]="a.usage" [error]="err(!a.usage.length, 'Choose at least one')" />
     }
 
     @case ('q6') {
-      <ds-radio-card heading="Will this be your main bank?" [(value)]="a.mainBank" />
-      <ds-radio-card heading="Do you expect to use other banks?" [(value)]="a.otherBanks" />
+      <ds-radio-card heading="Will this be your main bank?" [(value)]="a.mainBank" [error]="err(!a.mainBank, 'Choose an answer')" />
+      <ds-radio-card heading="Do you expect to use other banks?" [(value)]="a.otherBanks" [error]="err(!a.otherBanks, 'Choose an answer')" />
     }
 
     @case ('q7') {
-      <ds-checkbox-card heading="Choose all that apply" [options]="employmentOptions" [(value)]="a.employment" />
+      <ds-checkbox-card heading="Choose all that apply" [options]="employmentOptions" [(value)]="a.employment" [error]="err(!a.employment.length, 'Choose at least one')" />
       @if (a.employment.includes('Employee')) {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Job title" [(value)]="a.jobTitle" />
-          <ds-field label="Employer" [(value)]="a.employer" />
+          <ds-field label="Job title" [(value)]="a.jobTitle" [error]="err(!a.jobTitle.trim())" />
+          <ds-field label="Employer" [(value)]="a.employer" [error]="err(!a.employer.trim())" />
         </div>
       }
     }
 
     @case ('q9') {
-      <ds-radio-card heading="Do you receive regular payments? For example salary, pension or benefits" [(value)]="a.regular" />
+      <ds-radio-card heading="Do you receive regular payments? For example salary, pension or benefits" [(value)]="a.regular" [error]="err(!a.regular, 'Choose an answer')" />
       @if (a.regular === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-checkbox-card heading="What do you receive?" [options]="regularOptions" [(value)]="a.regularTypes" />
+          <ds-checkbox-card heading="What do you receive?" [options]="regularOptions" [(value)]="a.regularTypes" [error]="err(!a.regularTypes.length, 'Choose at least one')" />
           @for (t of regularSelected(); track t) {
             <div class="group" animate.enter="reveal" animate.leave="conceal">
               <h3 class="subhead t-title-medium">{{ t }}</h3>
-              <ds-field label="Amount after tax" suffix="kr." inputmode="decimal" [(value)]="detail(t).amount" />
-              <ds-field label="How often" [options]="frequencies" [(value)]="detail(t).frequency" />
+              <ds-field label="Amount after tax" suffix="kr." inputmode="decimal" [(value)]="detail(t).amount" [error]="err(!detail(t).amount.trim())" />
+              <ds-field label="How often" [options]="frequencies" [(value)]="detail(t).frequency" [error]="err(!detail(t).frequency, 'Choose how often')" />
             </div>
           }
         </div>
@@ -100,95 +101,95 @@
     }
 
     @case ('q8') {
-      <ds-radio-card heading="Do you have connections to other countries?" [(value)]="a.connections" />
+      <ds-radio-card heading="Do you have connections to other countries?" [(value)]="a.connections" [error]="err(!a.connections, 'Choose an answer')" />
       @if (a.connections === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.connectionCountry" supporting="You can add up to 5 countries" />
-          <ds-checkbox-card heading="Type of connection" [options]="connectionOptions" [(value)]="a.connectionTypes" />
-          <ds-field label="Tell us about the connection" [(value)]="a.connectionText" />
+          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.connectionCountry" [error]="err(!a.connectionCountry, 'Choose a country')" supporting="You can add up to 5 countries" />
+          <ds-checkbox-card heading="Type of connection" [options]="connectionOptions" [(value)]="a.connectionTypes" [error]="err(!a.connectionTypes.length, 'Choose at least one')" />
+          <ds-field label="Tell us about the connection" [(value)]="a.connectionText" [error]="err(!a.connectionText.trim())" />
         </div>
       }
     }
 
     @case ('q10') {
-      <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.otherPaymentsTotal" />
-      <ds-field label="Where do the payments come from?" [(value)]="a.otherPaymentsSource" />
+      <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.otherPaymentsTotal" [error]="err(!a.otherPaymentsTotal.trim(), 'Fill in this field (0 if none)')" />
+      <ds-field label="Where do the payments come from?" [(value)]="a.otherPaymentsSource" [error]="err(!a.otherPaymentsSource.trim() && !isZero(a.otherPaymentsTotal))" />
     }
 
     @case ('q11') {
-      <ds-radio-group-card heading="Do you expect to deposit cash into your accounts?" [(value)]="a.cashDeposits" />
+      <ds-radio-group-card heading="Do you expect to deposit cash into your accounts?" [(value)]="a.cashDeposits" [error]="err(!a.cashDeposits, 'Choose an answer')" />
       @if (a.cashDeposits === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Deposits per year" inputmode="numeric" [(value)]="a.depositsPerYear" />
-          <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.depositsTotal" />
-          <ds-field label="Where does the cash come from?" [(value)]="a.depositsSource" />
+          <ds-field label="Deposits per year" inputmode="numeric" [(value)]="a.depositsPerYear" [error]="err(!a.depositsPerYear.trim())" />
+          <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.depositsTotal" [error]="err(!a.depositsTotal.trim())" />
+          <ds-field label="Where does the cash come from?" [(value)]="a.depositsSource" [error]="err(!a.depositsSource.trim())" />
         </div>
       }
     }
 
     @case ('q12') {
-      <ds-radio-card heading="Do you expect to withdraw cash?" [(value)]="a.cashWithdrawals" />
+      <ds-radio-card heading="Do you expect to withdraw cash?" [(value)]="a.cashWithdrawals" [error]="err(!a.cashWithdrawals, 'Choose an answer')" />
       @if (a.cashWithdrawals === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Withdrawals per year" inputmode="numeric" [(value)]="a.withdrawalsPerYear" />
-          <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.withdrawalsTotal" />
-          <ds-field label="What will you mainly use the cash for?" [(value)]="a.withdrawalsUse" />
+          <ds-field label="Withdrawals per year" inputmode="numeric" [(value)]="a.withdrawalsPerYear" [error]="err(!a.withdrawalsPerYear.trim())" />
+          <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.withdrawalsTotal" [error]="err(!a.withdrawalsTotal.trim())" />
+          <ds-field label="What will you mainly use the cash for?" [(value)]="a.withdrawalsUse" [error]="err(!a.withdrawalsUse.trim())" />
         </div>
       }
     }
 
     @case ('q13') {
-      <ds-radio-card heading="Do you expect to receive transfers from abroad?" [(value)]="a.transfersIn" />
+      <ds-radio-card heading="Do you expect to receive transfers from abroad?" [(value)]="a.transfersIn" [error]="err(!a.transfersIn, 'Choose an answer')" />
       @if (a.transfersIn === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.transfersInCountry" supporting="You can add up to 5 countries" />
-          <ds-field label="Transfers per year" inputmode="numeric" [(value)]="a.transfersInPerYear" />
-          <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.transfersInTotal" />
-          <ds-field label="Purpose and sender" [(value)]="a.transfersInPurpose" />
+          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.transfersInCountry" [error]="err(!a.transfersInCountry, 'Choose a country')" supporting="You can add up to 5 countries" />
+          <ds-field label="Transfers per year" inputmode="numeric" [(value)]="a.transfersInPerYear" [error]="err(!a.transfersInPerYear.trim())" />
+          <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.transfersInTotal" [error]="err(!a.transfersInTotal.trim())" />
+          <ds-field label="Purpose and sender" [(value)]="a.transfersInPurpose" [error]="err(!a.transfersInPurpose.trim())" />
         </div>
       }
     }
 
     @case ('q14') {
-      <ds-radio-card heading="Do you expect to transfer money abroad?" [(value)]="a.transfersOut" />
+      <ds-radio-card heading="Do you expect to transfer money abroad?" [(value)]="a.transfersOut" [error]="err(!a.transfersOut, 'Choose an answer')" />
       @if (a.transfersOut === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.transfersOutCountry" supporting="You can add up to 5 countries" />
-          <ds-field label="Transfers per year" inputmode="numeric" [(value)]="a.transfersOutPerYear" />
-          <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.transfersOutTotal" />
-          <ds-field label="Purpose and recipient" [(value)]="a.transfersOutPurpose" />
+          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.transfersOutCountry" [error]="err(!a.transfersOutCountry, 'Choose a country')" supporting="You can add up to 5 countries" />
+          <ds-field label="Transfers per year" inputmode="numeric" [(value)]="a.transfersOutPerYear" [error]="err(!a.transfersOutPerYear.trim())" />
+          <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.transfersOutTotal" [error]="err(!a.transfersOutTotal.trim())" />
+          <ds-field label="Purpose and recipient" [(value)]="a.transfersOutPurpose" [error]="err(!a.transfersOutPurpose.trim())" />
         </div>
       }
     }
 
     @case ('q15') {
-      <ds-field label="Type of ID" [options]="idTypes" [(value)]="a.idType" />
-      <ds-upload-card [heading]="uploadHeading()" [hint]="uploadHint()" [(files)]="a.idFiles" />
+      <ds-field label="Type of ID" [options]="idTypes" [(value)]="a.idType" [error]="err(!a.idType, 'Choose a type of ID')" />
+      <ds-upload-card [heading]="uploadHeading()" [hint]="uploadHint()" [(files)]="a.idFiles" [error]="err(!a.idFiles.length, 'Upload a photo of your ID')" />
     }
 
     @case ('q16') {
-      <ds-field label="Type of document" [options]="addressDocTypes" [(value)]="a.addressDocType" />
-      <ds-upload-card [heading]="addressHeading()" [hint]="addressHint()" [(files)]="a.addressFiles" />
+      <ds-field label="Type of document" [options]="addressDocTypes" [(value)]="a.addressDocType" [error]="err(!a.addressDocType, 'Choose a type of document')" />
+      <ds-upload-card [heading]="addressHeading()" [hint]="addressHint()" [(files)]="a.addressFiles" [error]="err(!a.addressFiles.length, 'Upload a document')" />
     }
 
     @case ('q17') {
       <ds-alert type="info" heading="Message from your adviser">
         Please upload your latest annual tax statement (årsopgørelse).
       </ds-alert>
-      <ds-upload-card heading="Documents" hint="Requested by your adviser" [(files)]="a.adviserFiles" />
+      <ds-upload-card heading="Documents" hint="Requested by your adviser" [(files)]="a.adviserFiles" [error]="err(!a.adviserFiles.length, 'Upload the requested document')" />
       <ds-field label="Comment to the bank (optional)" [(value)]="a.adviserComment" />
     }
 
     @case ('q18') {
       <ds-alert type="info" heading="What you’re saying yes to">Consent statement text goes here.</ds-alert>
-      <ds-radio-card heading="Your choice" [options]="marketingOptions" [(value)]="a.marketing" />
+      <ds-radio-card heading="Your choice" [options]="marketingOptions" [(value)]="a.marketing" [error]="err(!a.marketing, 'Choose an answer')" />
     }
 
     @case ('q19') {
       <ds-alert type="info" heading="Consent statement">
         Read the full statement before you choose. It opens in a new page.
       </ds-alert>
-      <ds-radio-card heading="Do you give your consent?" [options]="groupOptions" [(value)]="a.groupConsent" />
+      <ds-radio-card heading="Do you give your consent?" [options]="groupOptions" [(value)]="a.groupConsent" [error]="err(!a.groupConsent, 'Choose an answer')" />
     }
   }
 

@@ -21,6 +21,7 @@ import {
   USAGE_OPTIONS,
   moduleOf,
   flagFor,
+  isZero,
   taxCountryLine,
 } from '../data/flow';
 import { FlowState } from '../data/state.service';
@@ -178,7 +179,17 @@ export class QuestionPage implements DoCheck {
       if (!this.editing()) untracked(() => this.state.setFocus(m.id));
     });
 
-    // Coming back from removing a tax country: confirm it and offer Undo.
+    // Forced flow: a later question can't be opened before the earlier ones are done.
+    effect(() => {
+      const q = this.qid();
+      untracked(() => {
+        this.submitted.set(false);
+        if (!this.editing() && !this.state.canOpen(q)) {
+          this.router.navigate(this.state.nextTarget(), { replaceUrl: true });
+        }
+      });
+    });
+        // Coming back from removing a tax country: confirm it and offer Undo.
     const removed = this.router.currentNavigation()?.extras.state?.['removedTaxCountry'] as RemovedTaxCountry | undefined;
     if (removed) this.offerUndo(removed);
   }
@@ -240,35 +251,41 @@ export class QuestionPage implements DoCheck {
 
   // ---- navigation ----------------------------------------------------------
 
+  // ---- validation ----------------------------------------------------------
+
+  /** Set by Continue / Save changes; errors show from then on and update as the customer fixes them. */
+  protected readonly submitted = signal(false);
+  protected readonly isZero = isZero;
+
+  protected err(missing: boolean, message = 'Fill in this field'): string | null {
+    return this.submitted() && missing ? message : null;
+  }
+
+  /** Validate this page; on failure show the errors and bring the first one into view. */
+  private validate(): boolean {
+    this.submitted.set(true);
+    if (this.state.isComplete(this.qid())) return true;
+    setTimeout(() =>
+      document.querySelector('[role="alert"], [aria-invalid="true"]')?.scrollIntoView({ block: 'center', behavior: 'smooth' }),
+    );
+    return false;
+  }
+
   protected next(): void {
+    if (!this.validate()) return;
+    this.state.markAnswered(this.qid());
+    const next = this.module().questions[this.index() + 1];
     if (this.editing()) {
       // Edit mode walks the module, keeping the edit flags.
-      this.state.markAnswered(this.qid());
-      this.router.navigate(['/q', this.module().questions[this.index() + 1]], {
-        queryParams: this.route.snapshot.queryParams,
-      });
+      this.router.navigate(['/q', next], { queryParams: this.route.snapshot.queryParams });
       return;
     }
-    const m = this.module();
-    this.state.markAnswered(this.qid());
-    // Next unanswered question after this one, then any earlier one still open.
-    const i = this.index();
-    // A page left empty only moves forward, so skipping never loops back through empty pages.
-    const after = m.questions.slice(i + 1);
-    const ordered = this.state.isAnswered(this.qid()) ? [...after, ...m.questions.slice(0, i)] : after;
-    const open = ordered.find((x) => !this.state.isAnswered(x));
-    if (open) {
-      this.router.navigate(['/q', open]);
+    if (next) {
+      this.router.navigate(['/q', next]);
       return;
     }
-    if (!this.state.isAnswered(this.qid())) {
-      // Last page left empty: back to the hub without completing the module.
-      this.nav.back();
-      this.router.navigate(['/']);
-      return;
-    }
-    // Module done: hub focus falls back to the first incomplete module in order.
-    this.state.completeModule(m.id);
+    // Last step of the module: it's complete, back to the hub.
+    this.state.completeModule(this.module().id);
     this.nav.back(); // end of the section: page slides out to the right
     this.router.navigate(['/']);
   }
@@ -281,6 +298,7 @@ export class QuestionPage implements DoCheck {
   }
 
   protected saveChanges(): void {
+    if (!this.validate()) return;
     const m = this.module();
     this.state.markAnswered(this.qid());
     if (m.questions.every((q) => this.state.isAnswered(q))) this.state.completeModule(m.id);

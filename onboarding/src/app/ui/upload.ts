@@ -17,6 +17,7 @@ export function formatSize(bytes: number): string {
  */
 @Component({
   selector: 'ds-upload-card',
+  host: { '[class.invalid]': '!!error()' },
   imports: [DsIcon, MatProgressSpinnerModule, MatRippleModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -71,8 +72,13 @@ export function formatSize(bytes: number): string {
         }
       </ul>
     }
+    @if (error()) {
+      <p class="upload-error t-body-small" role="alert">{{ error() }}</p>
+    }
   `,
   styles: `
+    :host(.invalid) { box-shadow: inset 0 0 0 2px var(--md-sys-color-error); }
+    .upload-error { margin: 0; color: var(--md-sys-color-error); }
     :host {
       display: block;
       background: var(--md-sys-color-secondary-container);
@@ -137,6 +143,8 @@ export function formatSize(bytes: number): string {
 export class DsUploadCard {
   readonly heading = input.required<string>();
   readonly hint = input.required<string>();
+  /** Validation message: red outline + message under the files. */
+  readonly error = input<string | null>(null);
   readonly files = model<UploadedFile[]>([]);
 
   protected readonly dragging = signal(false);

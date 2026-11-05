@@ -88,11 +88,8 @@ export class HubPage {
           link: ['/q', q],
           queryParams: editOne,
         }));
-      } else {
-        // Open modules expand in place; the expanded one shows its questions.
-        base.action = () => this.state.setFocus(m.id);
-        base.chevron = st === 'current' ? 'up' : 'down';
       }
+      // Upcoming modules are locked until the earlier ones are done (forced order).
       if (st === 'current') {
         const firstOpen = this.state.firstOpenQuestion(m);
         base.expanded = true;
@@ -101,7 +98,8 @@ export class HubPage {
           title: TASK_NAMES[q],
           subtitle: 'About 1 min',
           state: this.state.isAnswered(q) ? 'done' : q === firstOpen ? 'next' : 'later',
-          link: ['/q', q],
+          // Only answered questions and the next one open; later ones wait their turn.
+          link: this.state.canOpen(q) ? ['/q', q] : undefined,
           queryParams: this.state.isAnswered(q) ? editOne : undefined,
         }));
       }

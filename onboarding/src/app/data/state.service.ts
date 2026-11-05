@@ -8,7 +8,7 @@ import {
   QuestionId,
   demoAnswers,
   emptyAnswers,
-  isFilled,
+  isComplete,
 } from './flow';
 
 const STORAGE_KEY = 'bec-kyc-onboarding-v1';
@@ -56,13 +56,18 @@ export class FlowState {
     () => MODULES.find((m) => !this.completed().has(m.id)) ?? null,
   );
 
-  /** The single expanded module on the hub: the user's focus if still open, else the first open one. */
-  readonly currentModule = computed<FlowModule | null>(() => {
-    const f = this.focus();
-    const fm = f ? MODULES.find((m) => m.id === f) : undefined;
-    if (fm && !this.completed().has(fm.id)) return fm;
-    return this.firstOpenModule();
-  });
+  /** The flow is forced: the module in progress is always the first incomplete one. */
+  readonly currentModule = computed<FlowModule | null>(() => this.firstOpenModule());
+
+  /** The one question that can be answered next (all earlier ones are complete), or null when all are done. */
+  readonly nextQuestion = computed<QuestionId | null>(
+    () => ALL_QUESTIONS.find((q) => !this.answered().has(q)) ?? null,
+  );
+
+  /** Answered questions can be revisited; later ones open only in order. */
+  canOpen(q: QuestionId): boolean {
+    return this.answered().has(q) || this.nextQuestion() === q;
+  }
 
   /** Remaining minutes; partly answered modules count proportionally (rounded up, min 1). */
   readonly minutesLeft = computed(() => {
@@ -111,16 +116,20 @@ export class FlowState {
 
   /** Where the hub's Continue button goes. */
   nextTarget(): string[] {
-    const m = this.currentModule();
-    if (!m) return ['/review'];
-    return ['/q', this.firstOpenQuestion(m) ?? m.questions[0]];
+    const q = this.nextQuestion();
+    return q ? ['/q', q] : ['/review'];
   }
 
   // ---- mutations -----------------------------------------------------------
 
-  /** Mark a question answered (green check) if the customer filled anything in, otherwise clear it. */
+  /** Whether every required answer on a question is given. */
+  isComplete(q: QuestionId): boolean {
+    return isComplete(q, this.answers);
+  }
+
+  /** Mark a question answered (green check) when it's complete, otherwise clear it. */
   markAnswered(q: QuestionId): void {
-    const filled = isFilled(q, this.answers);
+    const filled = isComplete(q, this.answers);
     this.answered.update((s) => {
       const next = new Set(s);
       if (filled) next.add(q);
