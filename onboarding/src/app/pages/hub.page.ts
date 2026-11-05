@@ -12,7 +12,7 @@ import { DsTimeline, TimelineMilestone } from '../ui/timeline';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ds-screen>
-      <ds-task-bar title="Your tasks" />
+      <ds-task-bar title="Your tasks" [closeAction]="clearAll" />
       <ds-page-header [tag]="tag()" title="Update your information" [body]="body()" />
       <ds-alert type="warning" heading="Complete by 15 December 2026">
         After this date, some services may be paused.
@@ -30,6 +30,12 @@ export class HubPage {
   constructor() {
     this.state.clearEdit();
   }
+
+  /** Close X starts the questionnaire over. */
+  protected readonly clearAll = () => {
+    this.state.clearAll();
+    window.scrollTo({ top: 0 });
+  };
 
   protected readonly tag = computed(() => {
     const n = this.state.doneCount();

@@ -7,6 +7,7 @@ import {
   ModuleId,
   QuestionId,
   demoAnswers,
+  emptyAnswers,
 } from './flow';
 
 const STORAGE_KEY = 'bec-kyc-onboarding-v1';
@@ -146,6 +147,13 @@ export class FlowState {
 
   markSent(): void {
     this.completedAt = new Date().toISOString();
+    this.save();
+  }
+
+  /** Start over with no answers (hub close X). `?reset` restores the demo answers instead. */
+  clearAll(): void {
+    this.reset();
+    this.answers = emptyAnswers();
     this.save();
   }
 

@@ -9,6 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { DsIcon } from './icon';
 
 let nextId = 0;
@@ -18,14 +19,18 @@ let nextId = 0;
  * label/medium label in OnSecondaryFixedVar above a body/large value.
  * Empty + unfocused shows the label at body/large size (label-text configuration).
  * Optional trailing chevron-down (dropdown via mat-select) or suffix ("kr.").
+ * `searchable` dropdowns are typed into: the list filters as you type (mat-autocomplete),
+ * starting empty with the chosen value as placeholder; leaving without picking keeps the chosen value.
  */
 @Component({
   selector: 'ds-field',
-  imports: [DsIcon, MatSelectModule],
+  imports: [DsIcon, MatSelectModule, MatAutocompleteModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="wrapper"
+      matAutocompleteOrigin
+      #origin="matAutocompleteOrigin"
       [class.focused]="focused()"
       [class.collapsed]="collapsed()"
       (click)="activate()"
@@ -33,7 +38,30 @@ let nextId = 0;
       <div class="content">
         <div class="text">
           <label class="label" [attr.for]="id" [class.t-label-medium]="!collapsed()" [class.t-body-large]="collapsed()">{{ label() }}</label>
-          @if (options(); as opts) {
+          @if (options() && searchable()) {
+            <input
+              #input
+              class="value t-body-large"
+              [id]="id"
+              [value]="focused() ? query() : value()"
+              [placeholder]="focused() ? value() : ''"
+              autocomplete="off"
+              role="combobox"
+              [matAutocomplete]="auto"
+              [matAutocompleteConnectedTo]="origin"
+              (input)="query.set($any($event.target).value)"
+              (focus)="startSearch()"
+              (blur)="endSearch()"
+              (keydown.enter)="pickTopMatch()"
+            />
+            <mat-autocomplete #auto="matAutocomplete" class="ds-select-panel" hideSingleSelectionIndicator autoActiveFirstOption (optionSelected)="pick($event.option.value)">
+              @for (o of filtered(); track o) {
+                <mat-option [value]="o">{{ o }}</mat-option>
+              } @empty {
+                <mat-option disabled>No countries match “{{ query() }}”</mat-option>
+              }
+            </mat-autocomplete>
+          } @else if (options(); as opts) {
             <span class="value t-body-large">{{ value() }}</span>
             <mat-select
               #select
@@ -109,6 +137,7 @@ let nextId = 0;
       border: 0; padding: 0; margin: 0; outline: none; background: transparent;
       font-family: var(--font);
     }
+    input.value::placeholder { color: var(--md-sys-color-on-surface-variant); opacity: 1; }
     .collapsed .value { position: absolute; opacity: 0; pointer-events: none; height: 0; min-height: 0; }
     .trailing {
       width: 32px; height: 48px; flex: none;
@@ -139,6 +168,8 @@ export class DsField {
   readonly label = input.required<string>();
   readonly value = model<string>('');
   readonly options = input<string[] | null>(null);
+  /** Dropdown you can type into to filter the options (long lists such as countries). */
+  readonly searchable = input(false, { transform: (v: boolean | '') => v !== false });
   readonly suffix = input<string | null>(null);
   readonly supporting = input<string | null>(null);
   readonly inputmode = input<string | null>(null);
@@ -151,6 +182,47 @@ export class DsField {
 
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('input');
   private readonly select = viewChild<MatSelect>('select');
+  private readonly trigger = viewChild(MatAutocompleteTrigger);
+
+  /** Text typed into a searchable dropdown. */
+  protected readonly query = signal('');
+  /** Options matching the query; names starting with it come first. */
+  protected readonly filtered = computed(() => {
+    const opts = this.options() ?? [];
+    const q = this.query().trim().toLowerCase();
+    if (!q) return opts;
+    const starts = opts.filter((o) => o.toLowerCase().startsWith(q));
+    const contains = opts.filter((o) => !o.toLowerCase().startsWith(q) && o.toLowerCase().includes(q));
+    return [...starts, ...contains];
+  });
+
+  /** Focus starts a fresh search; the chosen country stays visible as the placeholder. */
+  protected startSearch(): void {
+    this.focused.set(true);
+    this.query.set('');
+  }
+
+  protected endSearch(): void {
+    this.focused.set(false);
+    this.query.set(this.value());
+  }
+
+  /** Enter takes the top match when no option is highlighted (e.g. typed fast, before the list updated). */
+  protected pickTopMatch(): void {
+    if (this.trigger()?.activeOption) return;
+    const top = this.filtered()[0];
+    if (!this.query().trim() || !top) return;
+    this.pick(top);
+    this.trigger()?.closePanel();
+  }
+
+  /** Picking a country ends the search, so the list doesn't cover the next field. */
+  protected pick(option: string): void {
+    this.value.set(option);
+    this.query.set(option);
+    // After mat-autocomplete has finished its own selection handling (it refocuses the input).
+    setTimeout(() => this.inputEl()?.nativeElement.blur());
+  }
 
   protected activate(): void {
     const el = this.inputEl()?.nativeElement;

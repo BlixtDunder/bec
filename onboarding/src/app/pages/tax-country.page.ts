@@ -30,7 +30,7 @@ export interface RemovedTaxCountry {
       <ds-task-bar title="Tax" [back]="true" [closeAction]="cancelFn" />
       <ds-page-header [tag]="tag()" [title]="isEdit() ? 'Edit tax country' : 'Add a tax country'" />
 
-      <ds-field label="Country" [options]="countryOptions()" [value]="country()" (valueChange)="country.set($event)" />
+      <ds-field label="Country" [options]="countryOptions()" searchable [value]="country()" (valueChange)="country.set($event)" />
 
       @if (!noTin()) {
         <ds-field

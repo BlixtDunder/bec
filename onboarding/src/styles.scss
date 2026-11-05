@@ -184,8 +184,9 @@ button {
   font: inherit;
 }
 
-// Select panel for the DS dropdown field
-.ds-select-panel.mat-mdc-select-panel {
+// Select / autocomplete panel for the DS dropdown field
+.ds-select-panel.mat-mdc-select-panel,
+.ds-select-panel.mat-mdc-autocomplete-panel {
   border-radius: var(--md-sys-shape-corner-medium) !important;
   padding: 8px 0 !important;
   margin-top: 4px;

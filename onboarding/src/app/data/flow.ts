@@ -244,3 +244,63 @@ export function demoAnswers(): Answers {
     groupConsent: 'yes',
   };
 }
+
+/**
+ * Answers after the customer clears everything (hub close X). Contact details
+ * come from the bank's records, so they stay; every question starts unanswered.
+ */
+export function emptyAnswers(): Answers {
+  const demo = demoAnswers();
+  return {
+    phoneCode: demo.phoneCode,
+    phone: demo.phone,
+    email: demo.email,
+    birthCountry: '',
+    birthCity: '',
+    citizenships: [],
+    taxDk: '',
+    taxOther: '',
+    taxCountries: [],
+    usage: [],
+    mainBank: '',
+    otherBanks: '',
+    employment: [],
+    jobTitle: '',
+    employer: '',
+    regular: '',
+    regularTypes: [],
+    regularDetails: {},
+    connections: '',
+    connectionCountry: '',
+    connectionTypes: [],
+    connectionText: '',
+    otherPaymentsTotal: '',
+    otherPaymentsSource: '',
+    cashDeposits: '',
+    depositsPerYear: '',
+    depositsTotal: '',
+    depositsSource: '',
+    cashWithdrawals: '',
+    withdrawalsPerYear: '',
+    withdrawalsTotal: '',
+    withdrawalsUse: '',
+    transfersIn: '',
+    transfersInCountry: '',
+    transfersInPerYear: '',
+    transfersInTotal: '',
+    transfersInPurpose: '',
+    transfersOut: '',
+    transfersOutCountry: '',
+    transfersOutPerYear: '',
+    transfersOutTotal: '',
+    transfersOutPurpose: '',
+    idType: '',
+    idFiles: [],
+    addressDocType: '',
+    addressFiles: [],
+    adviserFiles: [],
+    adviserComment: '',
+    marketing: '',
+    groupConsent: '',
+  };
+}
