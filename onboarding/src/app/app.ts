@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { FlowHistory } from './data/flow-history';
 
 @Component({
   selector: 'app-root',
@@ -17,4 +18,7 @@ import { RouterOutlet } from '@angular/router';
     }
   `,
 })
-export class App {}
+export class App {
+  // Start recording from the first navigation, so the back arrow knows where you came from.
+  private readonly history = inject(FlowHistory);
+}
