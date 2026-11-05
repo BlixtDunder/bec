@@ -25,7 +25,6 @@ import {
 } from '../data/flow';
 import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
-import { FlowHistory } from '../data/flow-history';
 import { DsActions, DsAlert, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsField } from '../ui/field';
 import { DsPhoneField } from '../ui/phone-field';
@@ -94,7 +93,6 @@ export class QuestionPage implements DoCheck {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly nav = inject(NavDirection);
-  private readonly history = inject(FlowHistory);
   private readonly snackBar = inject(MatSnackBar);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -290,10 +288,4 @@ export class QuestionPage implements DoCheck {
   }
 
   protected readonly cancelFn = () => this.cancel();
-
-  /** Task bar arrow: back to the page you came from (the hub if you opened this question directly). */
-  protected readonly goBackFn = () => {
-    this.nav.back();
-    this.router.navigateByUrl(this.history.previous());
-  };
 }
