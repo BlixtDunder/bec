@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, DoCheck, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatRippleModule } from '@angular/material/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { map } from 'rxjs';
 import {
   ADDRESS_DOC_TYPES,
@@ -15,8 +17,10 @@ import {
   QuestionId,
   REGULAR_TYPES,
   RegularDetail,
+  TaxCountry,
   USAGE_OPTIONS,
   moduleOf,
+  taxCountryLine,
 } from '../data/flow';
 import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
@@ -26,6 +30,7 @@ import { DsPhoneField } from '../ui/phone-field';
 import { ChoiceOption, DsCheckboxCard, DsRadioCard, DsRadioGroupCard } from '../ui/choice';
 import { DsUploadCard } from '../ui/upload';
 import { DsIcon } from '../ui/icon';
+import { RemovedTaxCountry } from './tax-country.page';
 
 const opts = (list: string[]): ChoiceOption[] => list.map((v) => ({ value: v, label: v }));
 
@@ -63,6 +68,7 @@ const COPY: Record<QuestionId, QuestionCopy> = {
   selector: 'app-question',
   imports: [
     MatButtonModule,
+    MatRippleModule,
     DsScreen,
     DsTaskBar,
     DsPageHeader,
@@ -85,6 +91,8 @@ export class QuestionPage implements DoCheck {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly nav = inject(NavDirection);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly qid = toSignal(
     this.route.paramMap.pipe(map((p) => p.get('qid') as QuestionId)),
@@ -163,6 +171,10 @@ export class QuestionPage implements DoCheck {
       const m = this.module();
       if (!this.editing()) untracked(() => this.state.setFocus(m.id));
     });
+
+    // Coming back from removing a tax country: confirm it and offer Undo.
+    const removed = this.router.currentNavigation()?.extras.state?.['removedTaxCountry'] as RemovedTaxCountry | undefined;
+    if (removed) this.offerUndo(removed);
   }
 
   ngDoCheck(): void {
@@ -197,6 +209,33 @@ export class QuestionPage implements DoCheck {
     return this.a.addressDocType === 'Health insurance card'
       ? 'Must show your name, address and full CPR number.'
       : 'Must show your name and address and be less than 3 months old.';
+  }
+
+  // ---- Q4 tax countries ----------------------------------------------------
+
+  protected readonly taxCountryLine = taxCountryLine;
+
+  protected flagOf(country: string): string {
+    return FLAG_COUNTRIES.find((c) => c.name === country)?.flag ?? '';
+  }
+
+  protected addTaxCountry(): void {
+    this.router.navigate(['/q', 'q4', 'country'], { queryParamsHandling: 'preserve' });
+  }
+
+  protected editTaxCountry(index: number): void {
+    this.router.navigate(['/q', 'q4', 'country', index], { queryParamsHandling: 'preserve' });
+  }
+
+  private offerUndo({ index, item }: RemovedTaxCountry): void {
+    this.snackBar
+      .open(`${item.country} removed`, 'Undo', { duration: 6000, panelClass: 'ds-snackbar' })
+      .onAction()
+      .subscribe(() => {
+        this.a.taxCountries.splice(index, 0, item satisfies TaxCountry);
+        this.state.save();
+        this.cdr.markForCheck();
+      });
   }
 
   // ---- navigation ----------------------------------------------------------

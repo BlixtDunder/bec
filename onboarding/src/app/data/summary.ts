@@ -20,7 +20,7 @@ export function summarize(id: ModuleId, a: Answers): string {
       if (a.birthCity || a.birthCountry) parts.push(`Born in ${a.birthCity || a.birthCountry}`);
       const res = [
         ...(a.taxDk === 'yes' ? ['Denmark'] : []),
-        ...(a.taxOther === 'yes' && a.taxOtherCountry ? [a.taxOtherCountry] : []),
+        ...(a.taxOther === 'yes' ? a.taxCountries.map((c) => c.country) : []),
       ];
       if (res.length) parts.push(`Tax resident in ${joinAnd(res)}`);
       return parts.join(' · ');

@@ -11,6 +11,8 @@
   --md-sys-color-on-surface: #1d1b20; // Surface/OnSurface (fg)
   --md-sys-color-on-surface-variant: #49454f; // Surface/OnSurfaceVar (fg)
   --md-sys-color-inverse-on-surface: #f5eff7; // Surface/OnSurfaceInverse (fg)
+  --md-sys-color-inverse-surface: #322f35; // Surface/SurfaceInverse
+  --md-sys-color-inverse-primary: #c9cbdc; // Surface/SurfaceInversePrimary
   --md-sys-color-primary: #0f1e82; // Primary/Primary
   --md-sys-color-on-primary: #ffffff; // Primary/OnPrimary (fg)
   --md-sys-color-primary-container: #dddfe9; // Primary/PrimaryContainer (bg)
@@ -201,6 +203,18 @@ button {
   overflow: hidden;
   --mat-bottom-sheet-container-background-color: var(--md-sys-color-surface);
   border-radius: 28px 28px 0 0;
+}
+
+// DS Snackbar: 1 line, inverse surface, sits above the fixed actions band
+.mat-mdc-snack-bar-container.ds-snackbar {
+  --mat-snack-bar-container-color: var(--md-sys-color-inverse-surface);
+  --mat-snack-bar-supporting-text-color: var(--md-sys-color-inverse-on-surface);
+  --mat-snack-bar-button-color: var(--md-sys-color-inverse-primary);
+  --mat-snack-bar-container-shape: 4px;
+  --mat-snack-bar-supporting-text-font: var(--font);
+  margin: 0 var(--space-2) calc(var(--actions-h, 0px) + var(--space-1));
+  width: calc(min(100vw, 420px) - 2 * var(--space-2));
+  max-width: none;
 }
 
 // Conditional field reveal

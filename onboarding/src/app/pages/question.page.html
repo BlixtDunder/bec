@@ -39,13 +39,29 @@
 
     @case ('q4') {
       <ds-radio-card heading="Are you resident in Denmark for tax purposes?" [(value)]="a.taxDk" />
-      <ds-radio-card heading="Are you resident in any other countries for tax purposes?" [(value)]="a.taxOther" />
-      @if (a.taxOther === 'yes') {
-        <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Country" [options]="countries" [(value)]="a.taxOtherCountry" />
-          <ds-field label="Tax identification number (TIN)" [(value)]="a.tin" supporting="You can add up to 5 countries" />
-        </div>
-      }
+      <ds-radio-card heading="Are you resident in any other countries for tax purposes?" [(value)]="a.taxOther">
+        @if (a.taxOther === 'yes') {
+          <div animate.enter="reveal" animate.leave="conceal">
+            @if (a.taxCountries.length) {
+              <p class="list-header t-body-medium-medium">Your other tax countries</p>
+              @for (c of a.taxCountries; track c.country; let i = $index) {
+                <button type="button" class="country-row" matRipple (click)="editTaxCountry(i)">
+                  <img [src]="flagOf(c.country)" alt="" width="32" height="32" />
+                  <span class="country-text">
+                    <span class="t-body-large-medium">{{ c.country }}</span>
+                    <span class="t-body-medium supporting">{{ taxCountryLine(c) }}</span>
+                  </span>
+                  <ds-icon name="chevron-right" [size]="16" />
+                </button>
+              }
+            }
+            <button matButton="text" type="button" class="add-country" (click)="addTaxCountry()">
+              <ds-icon name="add" [size]="24" />
+              Add tax country
+            </button>
+          </div>
+        }
+      </ds-radio-card>
     }
 
     @case ('q5') {

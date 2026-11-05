@@ -60,6 +60,45 @@ export const FLAG_COUNTRIES: { name: string; flag: string }[] = COUNTRY_LIST.map
   flag: `flags/1x1/${c.code}.svg`,
 }));
 
+/** Why a customer has no TIN for a tax country (the CRS self-certification reasons A–C). */
+export type NoTinReason = 'not-issued' | 'not-received' | 'not-required';
+
+export interface TaxCountry {
+  country: string;
+  tin: string;
+  noTin: boolean;
+  noTinReason: NoTinReason | '';
+  /** Required when the reason is 'not-received'. */
+  noTinWhy: string;
+}
+
+export const NO_TIN_REASONS: { value: NoTinReason; label: (country: string) => string; short: string }[] = [
+  { value: 'not-issued', label: (c) => `${c} doesn't issue TINs`, short: "Country doesn't issue TINs" },
+  { value: 'not-received', label: () => "I haven't received one yet", short: 'Not received yet' },
+  { value: 'not-required', label: () => "I'm not required to have one", short: 'Not required' },
+];
+
+/** Format hints for the TIN field; other countries get a generic hint. */
+export const TIN_HINTS: Record<string, string> = {
+  Sweden: 'Swedish TINs have 12 digits',
+  Norway: 'Norwegian TINs have 11 digits',
+  Finland: 'Finnish TINs have 11 characters',
+  Germany: 'German TINs have 11 digits',
+  'United Kingdom': 'Your National Insurance number or UTR',
+  'United States': 'Your 9-digit SSN or ITIN',
+};
+
+export function tinHint(country: string): string {
+  return TIN_HINTS[country] ?? `As shown on your tax documents from ${country}`;
+}
+
+/** Supporting line for a tax-country row on Q4. */
+export function taxCountryLine(c: TaxCountry): string {
+  if (!c.noTin) return `TIN ${c.tin}`;
+  const r = NO_TIN_REASONS.find((x) => x.value === c.noTinReason);
+  return r ? `No TIN · ${r.short}` : 'No TIN';
+}
+
 export const FREQUENCIES = ['Every week', 'Every 2 weeks', 'Every month', 'Every quarter', 'Every year'];
 
 export const USAGE_OPTIONS = [
@@ -107,8 +146,7 @@ export interface Answers {
   citizenships: string[];
   taxDk: YesNo;
   taxOther: YesNo;
-  taxOtherCountry: string;
-  tin: string;
+  taxCountries: TaxCountry[];
   usage: string[];
   mainBank: YesNo;
   otherBanks: YesNo;
@@ -162,8 +200,7 @@ export function demoAnswers(): Answers {
     citizenships: [],
     taxDk: 'yes',
     taxOther: 'yes',
-    taxOtherCountry: 'Belgium',
-    tin: '850101 123 45',
+    taxCountries: [],
     usage: ['Everyday account', 'Cards', 'Online banking', 'Savings'],
     mainBank: 'yes',
     otherBanks: 'no',

@@ -54,7 +54,7 @@ const CARD_STYLES = `
   }
 `;
 
-/** Radio question card: title header (body/medium (medium)) + 72px rows, radio on the right. */
+/** Radio question card: title header (body/medium (medium)) + 72px rows, radio on the right; projected content follows the rows. */
 @Component({
   selector: 'ds-radio-card',
   imports: [MatRadioModule],
@@ -70,6 +70,7 @@ const CARD_STYLES = `
         </mat-radio-button>
       }
     </mat-radio-group>
+    <ng-content />
   `,
   styles: CARD_STYLES,
 })
