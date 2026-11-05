@@ -21,6 +21,7 @@ let nextId = 0;
  * Optional trailing chevron-down (dropdown via mat-select) or suffix ("kr.").
  * `searchable` dropdowns are typed into: the list filters as you type (mat-autocomplete),
  * starting empty with the chosen value as placeholder; leaving without picking keeps the chosen value.
+ * `imageFor` adds a leading image (e.g. a country flag) to the options and to the chosen value.
  */
 @Component({
   selector: 'ds-field',
@@ -36,6 +37,9 @@ let nextId = 0;
       (click)="activate()"
     >
       <div class="content">
+        @if (leadingImage(); as img) {
+          <img class="leading-image" [src]="img" alt="" width="24" height="24" />
+        }
         <div class="text">
           <label class="label" [attr.for]="id" [class.t-label-medium]="!collapsed()" [class.t-body-large]="collapsed()">{{ label() }}</label>
           @if (options() && searchable()) {
@@ -56,7 +60,13 @@ let nextId = 0;
             />
             <mat-autocomplete #auto="matAutocomplete" class="ds-select-panel" hideSingleSelectionIndicator autoActiveFirstOption (optionSelected)="pick($event.option.value)">
               @for (o of filtered(); track o) {
-                <mat-option [value]="o">{{ o }}</mat-option>
+                <mat-option [value]="o">
+                  @if (imageFor()?.(o); as img) {
+                    <span class="ds-option"><img [src]="img" alt="" width="24" height="24" loading="lazy" decoding="async" />{{ o }}</span>
+                  } @else {
+                    {{ o }}
+                  }
+                </mat-option>
               } @empty {
                 <mat-option disabled>No countries match “{{ query() }}”</mat-option>
               }
@@ -75,7 +85,13 @@ let nextId = 0;
               hideSingleSelectionIndicator
             >
               @for (o of opts; track o) {
-                <mat-option [value]="o">{{ o }}</mat-option>
+                <mat-option [value]="o">
+                  @if (imageFor()?.(o); as img) {
+                    <span class="ds-option"><img [src]="img" alt="" width="24" height="24" loading="lazy" decoding="async" />{{ o }}</span>
+                  } @else {
+                    {{ o }}
+                  }
+                </mat-option>
               }
             </mat-select>
           } @else {
@@ -116,7 +132,11 @@ let nextId = 0;
       transition: box-shadow 120ms ease-out;
     }
     .wrapper.focused { box-shadow: inset 0 0 0 2px var(--md-sys-color-primary); }
-    .content { display: flex; align-items: center; min-height: 48px; }
+    .content { display: flex; align-items: center; gap: var(--space-1-5); min-height: 48px; }
+    .leading-image {
+      width: 24px; height: 24px; border-radius: 50%; flex: none; object-fit: cover;
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+    }
     .text {
       flex: 1; min-width: 0;
       display: flex; flex-direction: column; justify-content: center;
@@ -168,6 +188,8 @@ export class DsField {
   readonly label = input.required<string>();
   readonly value = model<string>('');
   readonly options = input<string[] | null>(null);
+  /** Leading image for an option value (country flags); also shown before the chosen value. */
+  readonly imageFor = input<((option: string) => string | null) | null>(null);
   /** Dropdown you can type into to filter the options (long lists such as countries). */
   readonly searchable = input(false, { transform: (v: boolean | '') => v !== false });
   readonly suffix = input<string | null>(null);
@@ -183,6 +205,13 @@ export class DsField {
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('input');
   private readonly select = viewChild<MatSelect>('select');
   private readonly trigger = viewChild(MatAutocompleteTrigger);
+
+  /** The chosen value's image, hidden while the user is typing a new search. */
+  protected readonly leadingImage = computed(() => {
+    const fn = this.imageFor();
+    if (!fn || !this.value() || (this.searchable() && this.focused())) return null;
+    return fn(this.value());
+  });
 
   /** Text typed into a searchable dropdown. */
   protected readonly query = signal('');

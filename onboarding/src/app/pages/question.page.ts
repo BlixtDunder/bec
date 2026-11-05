@@ -20,6 +20,7 @@ import {
   TaxCountry,
   USAGE_OPTIONS,
   moduleOf,
+  flagFor,
   taxCountryLine,
 } from '../data/flow';
 import { FlowState } from '../data/state.service';
@@ -220,9 +221,7 @@ export class QuestionPage implements DoCheck {
 
   protected readonly taxCountryLine = taxCountryLine;
 
-  protected flagOf(country: string): string {
-    return FLAG_COUNTRIES.find((c) => c.name === country)?.flag ?? '';
-  }
+  protected readonly flagFor = flagFor;
 
   protected editTaxCountry(index: number): void {
     this.router.navigate(['/q', 'q4', 'country', index], { queryParamsHandling: 'preserve' });

@@ -9,7 +9,7 @@
     }
 
     @case ('q2') {
-      <ds-field label="Country" [options]="countries" searchable [(value)]="a.birthCountry" />
+      <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.birthCountry" />
       <ds-field label="City" [(value)]="a.birthCity" />
     }
 
@@ -46,7 +46,7 @@
               <p class="list-header t-body-medium-medium">Your other tax countries</p>
               @for (c of a.taxCountries; track c.country; let i = $index) {
                 <button type="button" class="country-row" matRipple (click)="editTaxCountry(i)">
-                  <img [src]="flagOf(c.country)" alt="" width="32" height="32" />
+                  <img [src]="flagFor(c.country)" alt="" width="32" height="32" />
                   <span class="country-text">
                     <span class="t-body-large-medium">{{ c.country }}</span>
                     <span class="t-body-medium supporting">{{ taxCountryLine(c) }}</span>
@@ -103,7 +103,7 @@
       <ds-radio-card heading="Do you have connections to other countries?" [(value)]="a.connections" />
       @if (a.connections === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Country" [options]="countries" searchable [(value)]="a.connectionCountry" supporting="You can add up to 5 countries" />
+          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.connectionCountry" supporting="You can add up to 5 countries" />
           <ds-checkbox-card heading="Type of connection" [options]="connectionOptions" [(value)]="a.connectionTypes" />
           <ds-field label="Tell us about the connection" [(value)]="a.connectionText" />
         </div>
@@ -141,7 +141,7 @@
       <ds-radio-card heading="Do you expect to receive transfers from abroad?" [(value)]="a.transfersIn" />
       @if (a.transfersIn === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Country" [options]="countries" searchable [(value)]="a.transfersInCountry" supporting="You can add up to 5 countries" />
+          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.transfersInCountry" supporting="You can add up to 5 countries" />
           <ds-field label="Transfers per year" inputmode="numeric" [(value)]="a.transfersInPerYear" />
           <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.transfersInTotal" />
           <ds-field label="Purpose and sender" [(value)]="a.transfersInPurpose" />
@@ -153,7 +153,7 @@
       <ds-radio-card heading="Do you expect to transfer money abroad?" [(value)]="a.transfersOut" />
       @if (a.transfersOut === 'yes') {
         <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Country" [options]="countries" searchable [(value)]="a.transfersOutCountry" supporting="You can add up to 5 countries" />
+          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.transfersOutCountry" supporting="You can add up to 5 countries" />
           <ds-field label="Transfers per year" inputmode="numeric" [(value)]="a.transfersOutPerYear" />
           <ds-field label="Expected total per year" suffix="kr." inputmode="decimal" [(value)]="a.transfersOutTotal" />
           <ds-field label="Purpose and recipient" [(value)]="a.transfersOutPurpose" />

@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { map } from 'rxjs';
-import { COUNTRIES, NO_TIN_REASONS, TaxCountry, tinHint } from '../data/flow';
+import { COUNTRIES, NO_TIN_REASONS, TaxCountry, flagFor, tinHint } from '../data/flow';
 import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
 import { DsActions, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
@@ -30,7 +30,7 @@ export interface RemovedTaxCountry {
       <ds-task-bar title="Tax" [back]="true" [closeAction]="cancelFn" />
       <ds-page-header [tag]="tag()" [title]="isEdit() ? 'Edit tax country' : 'Add a tax country'" />
 
-      <ds-field label="Country" [options]="countryOptions()" searchable [value]="country()" (valueChange)="country.set($event)" />
+      <ds-field label="Country" [options]="countryOptions()" searchable [imageFor]="flagFor" [value]="country()" (valueChange)="country.set($event)" />
 
       @if (!noTin()) {
         <ds-field
@@ -105,6 +105,7 @@ export class TaxCountryPage {
     return COUNTRIES.filter((c) => c !== 'Denmark' && !taken.has(c));
   });
 
+  protected readonly flagFor = flagFor;
   protected readonly hint = computed(() => tinHint(this.country()));
   protected readonly noTinOption = computed<ChoiceOption[]>(() => [
     { value: 'no-tin', label: `I don't have a TIN for ${this.country() || 'this country'}` },

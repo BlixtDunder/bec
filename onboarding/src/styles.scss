@@ -192,6 +192,22 @@ button {
   margin-top: 4px;
 }
 
+// Dropdown option with a leading flag
+.ds-select-panel .ds-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+
+  img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex: none;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  }
+}
+
 // Phone field: intl-tel-input only formats/validates, so its wrapper just fills the row
 .ds-iti { display: block; flex: 1; min-width: 0; }
 

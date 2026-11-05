@@ -99,6 +99,13 @@ export function taxCountryLine(c: TaxCountry): string {
   return r ? `No TIN · ${r.short}` : 'No TIN';
 }
 
+const FLAG_BY_NAME = new Map(FLAG_COUNTRIES.map((c) => [c.name, c.flag]));
+
+/** Round flag for a country name, or null if it isn't a country. */
+export function flagFor(country: string): string | null {
+  return FLAG_BY_NAME.get(country) ?? null;
+}
+
 export const FREQUENCIES = ['Every week', 'Every 2 weeks', 'Every month', 'Every quarter', 'Every year'];
 
 export const USAGE_OPTIONS = [
