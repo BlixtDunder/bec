@@ -30,6 +30,8 @@ export class FlowState {
   readonly completed = signal<ReadonlySet<ModuleId>>(new Set());
   /** Module the user chose to open on the hub (null = first incomplete). */
   readonly focus = signal<ModuleId | null>(null);
+  /** Completed modules the user expanded on the hub (kept while the app is open, not persisted). */
+  readonly expandedDone = signal<ReadonlySet<ModuleId>>(new Set());
   completedAt: string | null = null;
 
   private lastSaved = '';
@@ -87,6 +89,14 @@ export class FlowState {
   /** First unanswered question in a module, or null if all are answered. */
   firstOpenQuestion(m: FlowModule): QuestionId | null {
     return m.questions.find((q) => !this.answered().has(q)) ?? null;
+  }
+
+  toggleDone(id: ModuleId): void {
+    this.expandedDone.update((s) => {
+      const next = new Set(s);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
   }
 
   /** Expand a module on the hub (only open modules can take focus). */
@@ -161,6 +171,7 @@ export class FlowState {
     this.answers = demoAnswers();
     this.answered.set(new Set());
     this.completed.set(new Set());
+    this.expandedDone.set(new Set());
     this.focus.set(null);
     this.completedAt = null;
     this.save();

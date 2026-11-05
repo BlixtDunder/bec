@@ -57,6 +57,7 @@ export class HubPage {
     this.state.answered();
     this.state.completed();
     this.state.focus();
+    const expandedDone = this.state.expandedDone();
     return MODULES.map((m, i) => {
       const st = this.state.moduleState(m);
       const count = m.questions.length;
@@ -72,11 +73,21 @@ export class HubPage {
               ? `${answered} of ${count} answered`
               : `${count} ${count === 1 ? 'question' : 'questions'} · About ${m.minutes} min`,
       };
+      // Answered questions open on their own for editing (Save changes returns here).
+      const editOne = { edit: '1', only: '1' };
       if (st === 'done') {
-        // Completed modules open in edit mode.
-        base.link = ['/q', m.questions[0]];
-        base.queryParams = { edit: '1' };
-        base.chevron = 'right';
+        // Completed modules expand in place too, so any single answer can be changed.
+        const open = expandedDone.has(m.id);
+        base.action = () => this.state.toggleDone(m.id);
+        base.chevron = open ? 'up' : 'down';
+        base.expanded = open;
+        base.tasks = m.questions.map((q) => ({
+          title: TASK_NAMES[q],
+          subtitle: 'Completed',
+          state: 'done',
+          link: ['/q', q],
+          queryParams: editOne,
+        }));
       } else {
         // Open modules expand in place; the expanded one shows its questions.
         base.action = () => this.state.setFocus(m.id);
@@ -84,13 +95,14 @@ export class HubPage {
       }
       if (st === 'current') {
         const firstOpen = this.state.firstOpenQuestion(m);
+        base.expanded = true;
         base.tag = `About ${m.minutes} min`;
         base.tasks = m.questions.map((q) => ({
           title: TASK_NAMES[q],
           subtitle: 'About 1 min',
           state: this.state.isAnswered(q) ? 'done' : q === firstOpen ? 'next' : 'later',
           link: ['/q', q],
-          queryParams: this.state.isAnswered(q) ? { edit: '1' } : undefined,
+          queryParams: this.state.isAnswered(q) ? editOne : undefined,
         }));
       }
       return base;

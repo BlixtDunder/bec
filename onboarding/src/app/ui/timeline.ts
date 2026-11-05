@@ -22,15 +22,18 @@ export interface TimelineMilestone {
   queryParams?: Record<string, string>;
   /** Instead of navigating, run this (used to expand a module on the hub). */
   action?: () => void;
-  /** Chevron direction: right = navigate (done modules), down = expand, up = expanded. */
+  /** Chevron direction: right = navigate, down = expand, up = expanded. */
   chevron?: 'right' | 'down' | 'up';
+  /** Show the task rows under the module (the current module, or a completed one the user opened). */
+  expanded?: boolean;
   tasks?: TimelineTask[];
 }
 
 /**
  * Hub timeline card: vertical stepper with 40px markers on a 2px rail.
  * Milestone rows are 76px (marker 40 + 4 gap + 32 line), the last one 52px.
- * The current module expands into 88px task rows with small markers on the rail.
+ * An expanded module (the current one, or a completed one opened by the user)
+ * shows 88px task rows with small markers on the rail.
  */
 @Component({
   selector: 'ds-timeline',
@@ -52,7 +55,7 @@ export interface TimelineMilestone {
             [attr.href]="m.action ? '' : null"
             (click)="onMilestone($event, m)"
             [attr.role]="m.action ? 'button' : null"
-            [attr.aria-expanded]="m.action || m.state === 'current' ? m.state === 'current' : null"
+            [attr.aria-expanded]="m.action || m.expanded ? !!m.expanded : null"
             [attr.aria-label]="m.title + ', ' + (m.state === 'done' ? 'completed' : m.subtitle)"
           >
             <span class="rail">
@@ -64,7 +67,7 @@ export interface TimelineMilestone {
                   <span class="t-title-medium">{{ m.number }}</span>
                 }
               </span>
-              <span class="line" [class.hidden]="last && !(m.state === 'current' && m.tasks?.length)"></span>
+              <span class="line" [class.hidden]="last && !(m.expanded && m.tasks?.length)"></span>
             </span>
             <span class="body">
               <span class="text">
@@ -88,7 +91,7 @@ export interface TimelineMilestone {
               }
             </span>
           </a>
-          @if (m.state === 'current' && m.tasks?.length) {
+          @if (m.expanded && m.tasks?.length) {
             <ol class="tasks" [class.last]="last">
               <span class="tasks-line"></span>
               @for (t of m.tasks; track t.title) {

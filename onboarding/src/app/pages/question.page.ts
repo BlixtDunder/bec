@@ -112,7 +112,11 @@ export class QuestionPage implements DoCheck {
     return n > 1 ? `${this.index() + 1} of ${n}` : null;
   });
 
-  protected readonly isLast = computed(() => this.index() === this.module().questions.length - 1);
+  /** Editing a single answer from the hub: Save changes right away instead of walking the module. */
+  private readonly single = computed(() => this.query().has('only'));
+  protected readonly isLast = computed(
+    () => this.single() || this.index() === this.module().questions.length - 1,
+  );
 
   // Option lists
   protected readonly countries = COUNTRIES;
