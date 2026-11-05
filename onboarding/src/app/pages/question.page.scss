@@ -104,8 +104,11 @@
   }
 }
 
+// Text link: hugs its label, left-aligned with the rows (16px), not a full-width button
 .add-country {
-  width: 100%;
+  --mat-button-text-horizontal-padding: var(--space-2);
+  display: flex;
+  margin-right: auto;
 
   ds-icon {
     margin-right: var(--space-1);
