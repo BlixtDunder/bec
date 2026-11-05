@@ -74,6 +74,48 @@ export function isFilled(q: QuestionId, a: Answers): boolean {
   }
 }
 
+const set = (v: string) => v.trim().length > 0;
+
+/**
+ * Whether every required answer on a question is given (follow-up fields
+ * included). Sending to the bank needs all questions complete.
+ */
+export function isComplete(q: QuestionId, a: Answers): boolean {
+  switch (q) {
+    case 'q1': return set(a.phone) && set(a.email);
+    case 'q2': return set(a.birthCountry) && set(a.birthCity);
+    case 'q3': return a.citizenships.length > 0;
+    case 'q4': return !!a.taxDk && !!a.taxOther && (a.taxOther === 'no' || a.taxCountries.length > 0);
+    case 'q5': return a.usage.length > 0;
+    case 'q6': return !!a.mainBank && !!a.otherBanks;
+    case 'q7':
+      return a.employment.length > 0 && (!a.employment.includes('Employee') || (set(a.jobTitle) && set(a.employer)));
+    case 'q9':
+      return (
+        a.regular === 'no' ||
+        (a.regular === 'yes' &&
+          a.regularTypes.length > 0 &&
+          a.regularTypes.every((t) => set(a.regularDetails[t]?.amount ?? '') && set(a.regularDetails[t]?.frequency ?? '')))
+      );
+    case 'q8':
+      return a.connections === 'no' || (a.connections === 'yes' && set(a.connectionCountry) && a.connectionTypes.length > 0 && set(a.connectionText));
+    case 'q10': return set(a.otherPaymentsTotal) && (/^0+$/.test(a.otherPaymentsTotal.trim()) || set(a.otherPaymentsSource));
+    case 'q11':
+      return a.cashDeposits === 'no' || (a.cashDeposits === 'yes' && set(a.depositsPerYear) && set(a.depositsTotal) && set(a.depositsSource));
+    case 'q12':
+      return a.cashWithdrawals === 'no' || (a.cashWithdrawals === 'yes' && set(a.withdrawalsPerYear) && set(a.withdrawalsTotal) && set(a.withdrawalsUse));
+    case 'q13':
+      return a.transfersIn === 'no' || (a.transfersIn === 'yes' && set(a.transfersInCountry) && set(a.transfersInPerYear) && set(a.transfersInTotal) && set(a.transfersInPurpose));
+    case 'q14':
+      return a.transfersOut === 'no' || (a.transfersOut === 'yes' && set(a.transfersOutCountry) && set(a.transfersOutPerYear) && set(a.transfersOutTotal) && set(a.transfersOutPurpose));
+    case 'q15': return set(a.idType) && a.idFiles.length > 0;
+    case 'q16': return set(a.addressDocType) && a.addressFiles.length > 0;
+    case 'q17': return a.adviserFiles.length > 0;
+    case 'q18': return !!a.marketing;
+    case 'q19': return !!a.groupConsent;
+  }
+}
+
 export const ALL_QUESTIONS: QuestionId[] = MODULES.flatMap((m) => m.questions);
 
 export function moduleOf(q: QuestionId): FlowModule {

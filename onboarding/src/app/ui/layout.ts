@@ -123,7 +123,7 @@ export class DsPageHeader {
   readonly body = input<string | null>(null);
 }
 
-/** Alert: Warning (yellow + bell) or Default/info (outlined + info). */
+/** Alert: Warning (yellow + bell), Error (Error outline + info icon) or Default/info (outlined + info). */
 @Component({
   selector: 'ds-alert',
   imports: [DsIcon],
@@ -151,6 +151,12 @@ export class DsPageHeader {
       border-color: var(--md-sys-color-warning);
       color: var(--md-sys-color-on-warning-container);
     }
+    :host(.error) {
+      background: var(--md-sys-color-secondary-container);
+      border-color: var(--md-sys-color-error);
+      color: var(--md-sys-color-on-secondary-container);
+    }
+    :host(.error) .icon-container { color: var(--md-sys-color-error); }
     :host(.info) {
       background: var(--md-sys-color-tertiary-container);
       border-color: var(--md-sys-color-on-tertiary-fixed-variant);
@@ -162,7 +168,7 @@ export class DsPageHeader {
   `,
 })
 export class DsAlert {
-  readonly type = input<'warning' | 'info'>('info');
+  readonly type = input<'warning' | 'info' | 'error'>('info');
   readonly heading = input.required<string>();
 }
 

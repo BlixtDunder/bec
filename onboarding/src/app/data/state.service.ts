@@ -33,6 +33,8 @@ export class FlowState {
   readonly focus = signal<ModuleId | null>(null);
   /** Completed modules the user expanded on the hub (kept while the app is open, not persisted). */
   readonly expandedDone = signal<ReadonlySet<ModuleId>>(new Set());
+  /** The customer pressed Send with answers missing; Review keeps showing what's missing (not persisted). */
+  readonly sendAttempted = signal(false);
   completedAt: string | null = null;
 
   private lastSaved = '';
@@ -191,6 +193,7 @@ export class FlowState {
     this.answered.set(new Set());
     this.completed.set(new Set());
     this.expandedDone.set(new Set());
+    this.sendAttempted.set(false);
     this.focus.set(null);
     this.completedAt = null;
     this.save();

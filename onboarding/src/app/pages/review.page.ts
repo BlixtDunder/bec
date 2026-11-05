@@ -4,14 +4,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRippleModule } from '@angular/material/core';
 import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
-import { MODULES } from '../data/flow';
+import { MODULES, ModuleId, QuestionId, TASK_NAMES, isComplete } from '../data/flow';
 import { summarize } from '../data/summary';
-import { DsActions, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
+import { DsActions, DsAlert, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsIcon } from '../ui/icon';
 
 @Component({
   selector: 'app-review',
-  imports: [RouterLink, MatButtonModule, MatRippleModule, DsScreen, DsTaskBar, DsPageHeader, DsActions, DsIcon],
+  imports: [RouterLink, MatButtonModule, MatRippleModule, DsScreen, DsTaskBar, DsPageHeader, DsActions, DsAlert, DsIcon],
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
     <ds-screen>
@@ -20,11 +20,25 @@ import { DsIcon } from '../ui/icon';
         title="Check your answers"
         body="Tap an area to change your answers. Nothing is sent until you confirm."
       />
+      @if (tried() && incompleteCount() > 0) {
+        <ds-alert id="send-error" type="error" heading="Some answers are missing">
+          Complete the {{ incompleteCount() === 1 ? 'area' : incompleteCount() + ' areas' }} marked below before you send.
+        </ds-alert>
+      }
       <section class="list" aria-labelledby="answers-title">
         <p id="answers-title" class="title-header t-body-medium-medium">Your answers</p>
         <ul>
           @for (m of modules; track m.id) {
             <li>
+              @if (tried() && missing(m.id).length) {
+                <a class="row" matRipple [routerLink]="['/q', missing(m.id)[0]]" [queryParams]="{ edit: 1, only: 1, from: 'review' }">
+                  <span class="text">
+                    <span class="t-body-large-medium headline">{{ m.title }}</span>
+                    <span class="t-body-medium missing">Missing: {{ missingNames(m.id) }}</span>
+                  </span>
+                  <ds-icon name="chevron-right" [size]="16" />
+                </a>
+              } @else {
               <a class="row" matRipple [routerLink]="['/q', m.questions[0]]" [queryParams]="{ edit: 1, from: 'review' }">
                 <span class="text">
                   <span class="t-body-large-medium headline">{{ m.title }}</span>
@@ -32,6 +46,7 @@ import { DsIcon } from '../ui/icon';
                 </span>
                 <ds-icon name="chevron-right" [size]="16" />
               </a>
+              }
             </li>
           }
         </ul>
@@ -60,6 +75,7 @@ import { DsIcon } from '../ui/icon';
     .text { align-self: flex-start; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-0-5); max-width: 288px; }
     .headline { color: var(--md-sys-color-on-surface); }
     .supporting { color: var(--md-sys-color-on-surface-variant); }
+    .missing { color: var(--md-sys-color-error); }
     ds-icon { color: var(--md-sys-color-on-surface); margin-left: auto; }
   `,
 })
@@ -77,7 +93,27 @@ export class ReviewPage {
     return summarize(id, this.state.answers);
   }
 
+  /** Send is never disabled: pressing it with answers missing shows what to complete. */
+  protected readonly tried = this.state.sendAttempted;
+
+  protected missing(id: ModuleId): QuestionId[] {
+    return MODULES.find((m) => m.id === id)!.questions.filter((q) => !isComplete(q, this.state.answers));
+  }
+
+  protected missingNames(id: ModuleId): string {
+    return this.missing(id).map((q) => TASK_NAMES[q]).join(', ');
+  }
+
+  protected incompleteCount(): number {
+    return MODULES.filter((m) => this.missing(m.id).length > 0).length;
+  }
+
   protected send(): void {
+    this.tried.set(true);
+    if (this.incompleteCount() > 0) {
+      setTimeout(() => document.getElementById('send-error')?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+      return;
+    }
     this.state.markSent();
     this.router.navigate(['/sent']);
   }
