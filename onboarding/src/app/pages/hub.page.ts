@@ -19,7 +19,7 @@ import { DsTimeline, TimelineMilestone } from '../ui/timeline';
       </ds-alert>
       <ds-timeline [milestones]="milestones()" />
       <ds-actions>
-        <a matButton="filled" [routerLink]="state.nextTarget()">Continue</a>
+        <a matButton="filled" [routerLink]="state.nextTarget()">{{ state.started() ? 'Continue' : 'Get started' }}</a>
       </ds-actions>
     </ds-screen>
   `,
