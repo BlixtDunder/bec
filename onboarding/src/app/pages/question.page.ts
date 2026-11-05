@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRippleModule } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -69,6 +69,7 @@ const COPY: Record<QuestionId, QuestionCopy> = {
   imports: [
     MatButtonModule,
     MatRippleModule,
+    RouterLink,
     DsScreen,
     DsTaskBar,
     DsPageHeader,
@@ -217,10 +218,6 @@ export class QuestionPage implements DoCheck {
 
   protected flagOf(country: string): string {
     return FLAG_COUNTRIES.find((c) => c.name === country)?.flag ?? '';
-  }
-
-  protected addTaxCountry(): void {
-    this.router.navigate(['/q', 'q4', 'country'], { queryParamsHandling: 'preserve' });
   }
 
   protected editTaxCountry(index: number): void {

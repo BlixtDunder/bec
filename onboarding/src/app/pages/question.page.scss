@@ -104,13 +104,17 @@
   }
 }
 
-// Text link: hugs its label, centred in the card (not a full-width button)
+// Plain text link, centred in the card; padding keeps a 48px tap target
 .add-country {
-  --mat-button-text-horizontal-padding: var(--space-2);
-  display: flex;
+  display: block;
+  width: fit-content;
   margin: 0 auto;
+  padding: var(--space-1-5) var(--space-2);
+  color: var(--md-sys-color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 
-  ds-icon {
-    margin-right: var(--space-1);
+  &:hover {
+    text-decoration-thickness: 2px;
   }
 }

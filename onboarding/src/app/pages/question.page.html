@@ -55,10 +55,7 @@
                 </button>
               }
             }
-            <button matButton="text" type="button" class="add-country" (click)="addTaxCountry()">
-              <ds-icon name="add" [size]="24" />
-              Add tax country
-            </button>
+            <a class="add-country t-body-large-medium" [routerLink]="['/q', 'q4', 'country']" queryParamsHandling="preserve">Add tax country</a>
           </div>
         }
       </ds-radio-card>
