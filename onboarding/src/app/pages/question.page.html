@@ -55,7 +55,10 @@
                 </button>
               }
             }
-            <a class="add-country t-body-large-medium" [routerLink]="['/q', 'q4', 'country']" queryParamsHandling="preserve">Add tax country</a>
+            <a class="add-country" matRipple [routerLink]="['/q', 'q4', 'country']" queryParamsHandling="preserve">
+              <span class="add-icon"><ds-icon name="add" [size]="24" /></span>
+              <span class="t-body-large-medium">Add tax country</span>
+            </a>
           </div>
         }
       </ds-radio-card>
