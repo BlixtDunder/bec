@@ -3,16 +3,17 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { FlowState } from '../data/state.service';
 import { MODULES, TASK_NAMES } from '../data/flow';
-import { DsActions, DsAlert, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
+import { DsActions, DsAlert, DsPageHeader, DsScreen } from '../ui/layout';
 import { DsTimeline, TimelineMilestone } from '../ui/timeline';
+import { DsBrandHeader } from '../ui/brand-header';
 
 @Component({
   selector: 'app-hub',
-  imports: [RouterLink, MatButtonModule, DsScreen, DsTaskBar, DsPageHeader, DsAlert, DsActions, DsTimeline],
+  imports: [RouterLink, MatButtonModule, DsScreen, DsBrandHeader, DsPageHeader, DsAlert, DsActions, DsTimeline],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ds-screen>
-      <ds-task-bar title="Your tasks" [closeAction]="clearAll" />
+      <ds-brand-header (logoClick)="clearAll()" />
       <ds-page-header [tag]="tag()" title="Update your information" [body]="body()" />
       <ds-alert type="warning" heading="Complete by 15 December 2026">
         After this date, some services may be paused.
@@ -32,11 +33,11 @@ export class HubPage {
     this.state.discardOpenSection();
   }
 
-  /** Close X starts the questionnaire over. */
-  protected readonly clearAll = () => {
+  /** The Nykredit logo starts the questionnaire over. */
+  protected clearAll(): void {
     this.state.clearAll();
     window.scrollTo({ top: 0 });
-  };
+  }
 
   protected readonly tag = computed(() => {
     const n = this.state.doneCount();

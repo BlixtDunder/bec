@@ -222,7 +222,7 @@ export class DsActions implements AfterViewInit, OnDestroy {
   selector: 'ds-screen',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content select="ds-task-bar" />
+    <ng-content select="ds-task-bar, ds-brand-header" />
     <main class="content"><ng-content /></main>
     <ng-content select="ds-actions" />
   `,
