@@ -1,5 +1,5 @@
 <ds-screen>
-  <ds-task-bar [title]="module().title" [back]="true" [closeAction]="editing() ? cancelFn : leaveFn" />
+  <ds-task-bar [title]="module().title" [closeAction]="editing() ? cancelFn : leaveFn" />
   <ds-page-header [tag]="tag()" [title]="copy().title" [body]="copy().body ?? null" />
 
   @switch (qid()) {
@@ -101,14 +101,37 @@
     }
 
     @case ('q8') {
-      <ds-radio-card heading="Do you have connections to other countries?" [(value)]="a.connections" [error]="err(!a.connections, 'Choose an answer')" />
-      @if (a.connections === 'yes') {
-        <div class="group" animate.enter="reveal" animate.leave="conceal">
-          <ds-field label="Country" [options]="countries" searchable [imageFor]="flagFor" [(value)]="a.connectionCountry" [error]="err(!a.connectionCountry, 'Choose a country')" supporting="You can add up to 5 countries" />
-          <ds-checkbox-card heading="Type of connection" [options]="connectionOptions" [(value)]="a.connectionTypes" [error]="err(!a.connectionTypes.length, 'Choose at least one')" />
-          <ds-field label="Tell us about the connection" [(value)]="a.connectionText" [error]="err(!a.connectionText.trim())" />
-        </div>
-      }
+      <ds-radio-card
+        heading="Do you have connections to other countries?"
+        [(value)]="a.connections"
+        [error]="err(!a.connections, 'Choose an answer') || err(a.connections === 'yes' && !a.connectionCountries.length, 'Add at least one country')"
+      >
+        @if (a.connections === 'yes') {
+          <div animate.enter="reveal" animate.leave="conceal">
+            @if (a.connectionCountries.length) {
+              <p class="list-header t-body-medium-medium">Your connections abroad</p>
+              @for (c of a.connectionCountries; track c.country; let i = $index) {
+                <button type="button" class="country-row" matRipple (click)="editConnection(i)">
+                  <img [src]="flagFor(c.country)" alt="" width="32" height="32" />
+                  <span class="country-text">
+                    <span class="t-body-large-medium">{{ c.country }}</span>
+                    <span class="t-body-medium supporting">{{ connectionLine(c) }}</span>
+                  </span>
+                  <ds-icon name="chevron-right" [size]="16" />
+                </button>
+              }
+            }
+            @if (a.connectionCountries.length < maxConnections) {
+              <a class="add-country" matRipple [routerLink]="['/q', 'q8', 'country']" queryParamsHandling="preserve">
+                <span class="add-icon"><ds-icon name="add-16" [size]="16" /></span>
+                <span class="t-body-large-medium">Add country</span>
+              </a>
+            } @else {
+              <p class="list-note t-body-medium">You can add up to {{ maxConnections }} countries</p>
+            }
+          </div>
+        }
+      </ds-radio-card>
     }
 
     @case ('q10') {
@@ -202,7 +225,7 @@
       }
       <button matButton="text" type="button" (click)="cancel()">Cancel</button>
     } @else {
-      <button matButton="filled" type="button" (click)="next()">Continue</button>
+      <button matButton="filled" type="button" (click)="next()">{{ isLast() ? 'Complete section' : 'Continue' }}</button>
       @if (qid() !== 'q1') {
         <button matButton="text" type="button" (click)="back()">Back</button>
       }

@@ -9,7 +9,8 @@ import { map } from 'rxjs';
 import {
   ADDRESS_DOC_TYPES,
   Answers,
-  CONNECTION_TYPES,
+  MAX_CONNECTION_COUNTRIES,
+  connectionLine,
   COUNTRIES,
   EMPLOYMENT_OPTIONS,
   FLAG_COUNTRIES,
@@ -18,7 +19,6 @@ import {
   QuestionId,
   REGULAR_TYPES,
   RegularDetail,
-  TaxCountry,
   USAGE_OPTIONS,
   moduleOf,
   flagFor,
@@ -33,7 +33,7 @@ import { DsPhoneField } from '../ui/phone-field';
 import { ChoiceOption, DsCheckboxCard, DsRadioCard, DsRadioGroupCard } from '../ui/choice';
 import { DsUploadCard } from '../ui/upload';
 import { DsIcon } from '../ui/icon';
-import { RemovedTaxCountry } from './tax-country.page';
+import { RemovedListItem } from './tax-country.page';
 import { DsLeaveDialog, LeaveDialogData } from '../ui/leave-dialog';
 
 const opts = (list: string[]): ChoiceOption[] => list.map((v) => ({ value: v, label: v }));
@@ -131,7 +131,6 @@ export class QuestionPage implements DoCheck {
   protected readonly usageOptions = opts(USAGE_OPTIONS);
   protected readonly employmentOptions = opts(EMPLOYMENT_OPTIONS);
   protected readonly regularOptions = opts(REGULAR_TYPES);
-  protected readonly connectionOptions = opts(CONNECTION_TYPES);
   protected readonly marketingOptions: ChoiceOption[] = [
     { value: 'yes', label: 'Yes, keep me updated' },
     { value: 'no', label: 'No thanks' },
@@ -193,7 +192,7 @@ export class QuestionPage implements DoCheck {
       });
     });
         // Coming back from removing a tax country: confirm it and offer Undo.
-    const removed = this.router.currentNavigation()?.extras.state?.['removedTaxCountry'] as RemovedTaxCountry | undefined;
+    const removed = this.router.currentNavigation()?.extras.state?.['removedListItem'] as RemovedListItem | undefined;
     if (removed) this.offerUndo(removed);
   }
 
@@ -240,12 +239,20 @@ export class QuestionPage implements DoCheck {
     this.router.navigate(['/q', 'q4', 'country', index], { queryParamsHandling: 'preserve' });
   }
 
-  private offerUndo({ index, item }: RemovedTaxCountry): void {
+  protected readonly connectionLine = connectionLine;
+  protected readonly maxConnections = MAX_CONNECTION_COUNTRIES;
+
+  protected editConnection(index: number): void {
+    this.router.navigate(['/q', 'q8', 'country', index], { queryParamsHandling: 'preserve' });
+  }
+
+  private offerUndo(removed: RemovedListItem): void {
     this.snackBar
-      .open(`${item.country} removed`, 'Undo', { duration: 6000, panelClass: 'ds-snackbar' })
+      .open(`${removed.item.country} removed`, 'Undo', { duration: 6000, panelClass: 'ds-snackbar' })
       .onAction()
       .subscribe(() => {
-        this.a.taxCountries.splice(index, 0, item satisfies TaxCountry);
+        if (removed.list === 'taxCountries') this.a.taxCountries.splice(removed.index, 0, removed.item);
+        else this.a.connectionCountries.splice(removed.index, 0, removed.item);
         this.cdr.markForCheck();
       });
   }

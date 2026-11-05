@@ -3,18 +3,17 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { map } from 'rxjs';
-import { COUNTRIES, NO_TIN_REASONS, TaxCountry, flagFor, tinError, tinHint } from '../data/flow';
+import { COUNTRIES, ConnectionCountry, moduleOf, NO_TIN_REASONS, TaxCountry, flagFor, tinError, tinHint } from '../data/flow';
 import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
 import { DsActions, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsField } from '../ui/field';
 import { ChoiceOption, DsCheckboxCard, DsRadioCard } from '../ui/choice';
 
-/** Router state handed back to Q4 after a removal, so it can offer Undo. */
-export interface RemovedTaxCountry {
-  index: number;
-  item: TaxCountry;
-}
+/** Router state handed back to the question after a removal, so it can offer Undo. */
+export type RemovedListItem =
+  | { list: 'taxCountries'; index: number; item: TaxCountry }
+  | { list: 'connectionCountries'; index: number; item: ConnectionCountry };
 
 /**
  * Add or edit one of the customer's other tax countries (Q4 sub-screen).
@@ -27,7 +26,7 @@ export interface RemovedTaxCountry {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ds-screen>
-      <ds-task-bar title="Tax" [back]="true" [closeAction]="cancelFn" />
+      <ds-task-bar [title]="sectionTitle" [closeAction]="cancelFn" />
       <ds-page-header [tag]="tag()" [title]="isEdit() ? 'Edit tax country' : 'Add a tax country'" />
 
       <ds-field label="Country" [options]="countryOptions()" searchable [imageFor]="flagFor" [value]="country()" (valueChange)="country.set($event)" [error]="show(countryError())" />
@@ -96,8 +95,13 @@ export class TaxCountryPage {
     }
   }
 
+  protected readonly sectionTitle = moduleOf('q4').title;
   protected readonly isEdit = computed(() => this.index() !== null);
-  protected readonly tag = computed(() => (this.route.snapshot.queryParamMap.has('edit') ? 'Editing' : '3 of 3'));
+  protected readonly tag = computed(() => {
+    if (this.route.snapshot.queryParamMap.has('edit')) return 'Editing';
+    const m = moduleOf('q4');
+    return `${m.questions.indexOf('q4') + 1} of ${m.questions.length}`;
+  });
 
   private readonly existing: TaxCountry | undefined =
     this.index() !== null ? this.state.answers.taxCountries[this.index()!] : undefined;
@@ -166,7 +170,7 @@ export class TaxCountryPage {
   protected remove(): void {
     const i = this.index()!;
     const [item] = this.state.answers.taxCountries.splice(i, 1);
-    this.backToQ4({ index: i, item } satisfies RemovedTaxCountry);
+    this.backToQ4({ list: 'taxCountries', index: i, item });
   }
 
   protected cancel(): void {
@@ -175,11 +179,11 @@ export class TaxCountryPage {
 
   protected readonly cancelFn = () => this.cancel();
 
-  private backToQ4(removed?: RemovedTaxCountry): void {
+  private backToQ4(removed?: RemovedListItem): void {
     this.nav.back();
     this.router.navigate(['/q', 'q4'], {
       queryParamsHandling: 'preserve',
-      state: removed ? { removedTaxCountry: removed } : undefined,
+      state: removed ? { removedListItem: removed } : undefined,
     });
   }
 }

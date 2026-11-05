@@ -102,7 +102,7 @@ export function isComplete(q: QuestionId, a: Answers): boolean {
           a.regularTypes.every((t) => set(a.regularDetails[t]?.amount ?? '') && set(a.regularDetails[t]?.frequency ?? '')))
       );
     case 'q8':
-      return a.connections === 'no' || (a.connections === 'yes' && set(a.connectionCountry) && a.connectionTypes.length > 0 && set(a.connectionText));
+      return a.connections === 'no' || (a.connections === 'yes' && a.connectionCountries.length > 0);
     case 'q10': return set(a.otherPaymentsTotal) && (isZero(a.otherPaymentsTotal) || set(a.otherPaymentsSource));
     case 'q11':
       return a.cashDeposits === 'no' || (a.cashDeposits === 'yes' && set(a.depositsPerYear) && set(a.depositsTotal) && set(a.depositsSource));
@@ -222,6 +222,20 @@ export const REGULAR_TYPES = [
   'Return on investments', 'Fees', 'Income from a hobby business',
 ];
 
+/** A country the customer has connections to (Q8), added on its own screen like tax countries. */
+export interface ConnectionCountry {
+  country: string;
+  types: string[];
+  text: string;
+}
+
+export const MAX_CONNECTION_COUNTRIES = 5;
+
+/** Supporting line for a connection row on Q8. */
+export function connectionLine(c: ConnectionCountry): string {
+  return c.types.join(', ');
+}
+
 export const CONNECTION_TYPES = [
   'Financial commitments', 'Family', 'Social or professional network', 'Main place of business',
 ];
@@ -263,9 +277,7 @@ export interface Answers {
   regularTypes: string[];
   regularDetails: Record<string, RegularDetail>;
   connections: YesNo;
-  connectionCountry: string;
-  connectionTypes: string[];
-  connectionText: string;
+  connectionCountries: ConnectionCountry[];
   otherPaymentsTotal: string;
   otherPaymentsSource: string;
   cashDeposits: YesNo;
@@ -317,9 +329,7 @@ export function demoAnswers(): Answers {
     regularTypes: ['Salary'],
     regularDetails: { Salary: { amount: '32,000', frequency: 'Every month' } },
     connections: 'yes',
-    connectionCountry: 'Sweden',
-    connectionTypes: ['Family'],
-    connectionText: 'My sister lives in Malmö.',
+    connectionCountries: [{ country: 'Sweden', types: ['Family'], text: 'My sister lives in Malmö.' }],
     otherPaymentsTotal: '15,000',
     otherPaymentsSource: 'Selling things online and MobilePay',
     cashDeposits: 'yes',
@@ -377,9 +387,7 @@ export function emptyAnswers(): Answers {
     regularTypes: [],
     regularDetails: {},
     connections: '',
-    connectionCountry: '',
-    connectionTypes: [],
-    connectionText: '',
+    connectionCountries: [],
     otherPaymentsTotal: '',
     otherPaymentsSource: '',
     cashDeposits: '',
