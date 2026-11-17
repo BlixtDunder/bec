@@ -91,7 +91,7 @@
           <ds-checkbox-card heading="What do you receive?" [options]="regularOptions" [(value)]="a.regularTypes" [error]="err(!a.regularTypes.length, 'Choose at least one')" />
           @for (t of regularSelected(); track t) {
             <div class="group" animate.enter="reveal" animate.leave="conceal">
-              <h3 class="subhead t-title-medium">{{ t }}</h3>
+              <h2 class="subhead t-title-medium">{{ t }}</h2>
               <ds-field label="Amount after tax" suffix="kr." inputmode="decimal" [(value)]="detail(t).amount" [error]="err(!detail(t).amount.trim())" />
               <ds-field label="How often" [options]="frequencies" [(value)]="detail(t).frequency" [error]="err(!detail(t).frequency, 'Choose how often')" />
             </div>
@@ -204,8 +204,39 @@
     }
 
     @case ('q18') {
-      <ds-alert type="info" heading="What you’re saying yes to">Consent statement text goes here.</ds-alert>
-      <ds-radio-card heading="Your choice" [options]="marketingOptions" [(value)]="a.marketing" [error]="err(!a.marketing, 'Choose an answer')" />
+      <section class="statement" aria-labelledby="statement-toggle">
+        <h2 class="statement-heading">
+          <button
+            type="button"
+            id="statement-toggle"
+            class="statement-toggle t-body-large-medium"
+            [attr.aria-expanded]="statementOpen()"
+            aria-controls="statement-text"
+            (click)="statementOpen.set(!statementOpen())"
+          >
+            What you’re saying yes to
+            <ds-icon name="chevron-down" [size]="16" class="chevron" [class.up]="statementOpen()" />
+          </button>
+        </h2>
+        <div id="statement-text" class="statement-text t-body-large" [hidden]="!statementOpen()">
+          <p>When you’re our customer, we’d like to tell you about news and information that’s relevant to you and your finances.</p>
+          <p>
+            If you say yes, Nykredit may contact you about news, offers and services within banking, mortgages, pensions,
+            insurance and investments, and about competitions and events from Nykredit and our partners.
+          </p>
+          <p>We contact you by email, text message and in our apps and online banking. We never call you to sell.</p>
+          <p>
+            To make our messages relevant, we use information about you, such as your contact details, type of home,
+            pension needs, investment preferences and interests, and how you use our services. You can object to this at
+            any time.
+          </p>
+          <a class="partners-link" href="https://www.nykredit.dk/" target="_blank" rel="noopener">
+            See our partners<span class="sr-only"> (opens in a new tab)</span>
+            <ds-icon name="launch" [size]="16" />
+          </a>
+        </div>
+      </section>
+      <ds-radio-card heading="Your choice (required)" [options]="marketingOptions" [(value)]="a.marketing" [error]="err(!a.marketing, 'Choose an answer')" />
     }
 
     @case ('q19') {

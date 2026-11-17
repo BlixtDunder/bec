@@ -6,11 +6,25 @@ import {
   withViewTransitions,
 } from '@angular/router';
 import { routes } from './app.routes';
+import { Injectable } from '@angular/core';
+import { RouterStateSnapshot, TitleStrategy } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+
+/** Route titles read "<page> – Nykredit". */
+@Injectable({ providedIn: 'root' })
+class NykreditTitleStrategy extends TitleStrategy {
+  private readonly title = inject(Title);
+  override updateTitle(state: RouterStateSnapshot): void {
+    const t = this.buildTitle(state);
+    if (t) this.title.setTitle(`${t} – Nykredit`);
+  }
+}
 import { NavDirection } from './data/nav-direction';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: TitleStrategy, useClass: NykreditTitleStrategy },
     provideRouter(
       routes,
       withHashLocation(),

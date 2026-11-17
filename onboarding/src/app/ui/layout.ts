@@ -26,7 +26,7 @@ import { DsIcon } from './icon';
         </span>
       </a>
     }
-    <h1 class="title t-title-medium">{{ title() }}</h1>
+    <p class="title t-title-medium">{{ title() }}</p>
     <span class="spacer"></span>
   `,
   styles: `
@@ -103,7 +103,7 @@ export class DsTag {
     @if (tag()) {
       <ds-tag>{{ tag() }}</ds-tag>
     }
-    <h2 class="title t-headline-small">{{ title() }}</h2>
+    <h1 class="title t-headline-small" tabindex="-1">{{ title() }}</h1>
     @if (body()) {
       <p class="body t-body-large">{{ body() }}</p>
     }
@@ -222,9 +222,8 @@ export class DsActions implements AfterViewInit, OnDestroy {
   selector: 'ds-screen',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content select="ds-task-bar, ds-brand-header" />
-    <main class="content"><ng-content /></main>
-    <ng-content select="ds-actions" />
+    <header><ng-content select="ds-task-bar, ds-brand-header" /></header>
+    <main class="content"><ng-content /><ng-content select="ds-actions" /></main>
   `,
   styles: `
     :host { display: flex; flex-direction: column; min-height: 100dvh; }

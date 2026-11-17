@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRippleModule } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -29,6 +30,7 @@ import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
 import { DsActions, DsAlert, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsField } from '../ui/field';
+import { focusFirstError } from '../ui/focus';
 import { DsPhoneField } from '../ui/phone-field';
 import { ChoiceOption, DsCheckboxCard, DsRadioCard, DsRadioGroupCard } from '../ui/choice';
 import { DsUploadCard } from '../ui/upload';
@@ -62,8 +64,8 @@ const COPY: Record<QuestionId, QuestionCopy> = {
   q16: { title: 'Confirm your address', body: 'By law, we need a document that confirms where you live.' },
   q17: { title: 'Documents from your adviser' },
   q18: {
-    title: 'Can we keep you updated?',
-    body: 'We’d like to tell you about new options, products and services when they’re relevant to you. You can withdraw your consent at any time.',
+    title: 'Marketing consent',
+    body: 'Can we contact you about new options, products and services when they’re relevant to you and your finances?',
   },
   q19: { title: 'Sharing within the group', body: 'Let us share information about you with the rest of the Nykredit Group.' },
 };
@@ -98,6 +100,7 @@ export class QuestionPage implements DoCheck {
   private readonly nav = inject(NavDirection);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly titleService = inject(Title);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly qid = toSignal(
@@ -181,7 +184,9 @@ export class QuestionPage implements DoCheck {
       if (!this.editing()) untracked(() => this.state.setFocus(m.id));
     });
 
-    // Forced flow: a later question can't be opened before the earlier ones are done.
+    // Page title names the question and its section (WCAG 2.4.2).
+    effect(() => this.titleService.setTitle(`${this.copy().title} – ${this.module().title} – Nykredit`));
+        // Forced flow: a later question can't be opened before the earlier ones are done.
     effect(() => {
       const q = this.qid();
       untracked(() => {
@@ -229,6 +234,9 @@ export class QuestionPage implements DoCheck {
       : 'Must show your name and address and be less than 3 months old.';
   }
 
+  /** Q18: the full consent statement is shown by default; it can be collapsed. */
+  protected readonly statementOpen = signal(true);
+
   // ---- Q4 tax countries ----------------------------------------------------
 
   protected readonly taxCountryLine = taxCountryLine;
@@ -273,9 +281,7 @@ export class QuestionPage implements DoCheck {
   private validate(): boolean {
     this.submitted.set(true);
     if (this.state.isComplete(this.qid())) return true;
-    setTimeout(() =>
-      document.querySelector('.invalid, [aria-invalid="true"], .error')?.scrollIntoView({ block: 'start', behavior: 'smooth' }),
-    );
+    focusFirstError();
     return false;
   }
 
@@ -320,7 +326,10 @@ export class QuestionPage implements DoCheck {
         data: { section: this.module().title },
         panelClass: 'ds-dialog',
         width: 'calc(min(100vw, 420px) - 48px)',
-        autoFocus: 'dialog',
+        autoFocus: 'first-tabbable',
+        ariaLabelledBy: 'leave-title',
+        ariaDescribedBy: 'leave-desc',
+        role: 'alertdialog',
       })
       .afterClosed()
       .subscribe((leave) => leave && go());

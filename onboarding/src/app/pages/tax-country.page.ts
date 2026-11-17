@@ -8,6 +8,7 @@ import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
 import { DsActions, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsField } from '../ui/field';
+import { focusFirstError } from '../ui/focus';
 import { ChoiceOption, DsCheckboxCard, DsRadioCard } from '../ui/choice';
 
 /** Router state handed back to the question after a removal, so it can offer Undo. */
@@ -52,7 +53,7 @@ export type RemovedListItem =
             (valueChange)="reason.set($any($event))"
           />
           @if (show(reasonError()); as msg) {
-            <p class="error t-body-small" role="alert">{{ msg }}</p>
+            <p class="error t-body-small" data-error>{{ msg }}</p>
           }
           @if (reason() === 'not-received') {
             <ds-field label="Tell us why" [value]="why()" (valueChange)="why.set($event)" [error]="show(whyError())" />
@@ -150,7 +151,7 @@ export class TaxCountryPage {
     this.submitted.set(true);
     if (!this.valid()) {
       // Bring the first problem into view once the errors have rendered.
-      setTimeout(() => document.querySelector('.invalid, [aria-invalid="true"], .error')?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+      focusFirstError();
       return;
     }
     const item: TaxCountry = {

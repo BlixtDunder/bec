@@ -122,7 +122,7 @@ let nextId = 0;
       </div>
     </div>
     @if (error()) {
-      <div class="supporting error t-body-small" [id]="id + '-error'" role="alert">{{ error() }}</div>
+      <div class="supporting error t-body-small" [id]="id + '-error'" data-error>{{ error() }}</div>
     } @else if (supporting()) {
       <div class="supporting t-body-small">{{ supporting() }}</div>
     }

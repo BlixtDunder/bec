@@ -8,6 +8,7 @@ import { FlowState } from '../data/state.service';
 import { NavDirection } from '../data/nav-direction';
 import { DsActions, DsPageHeader, DsScreen, DsTaskBar } from '../ui/layout';
 import { DsField } from '../ui/field';
+import { focusFirstError } from '../ui/focus';
 import { ChoiceOption, DsCheckboxCard } from '../ui/choice';
 import { RemovedListItem } from './tax-country.page';
 
@@ -113,7 +114,7 @@ export class ConnectionCountryPage {
   protected save(): void {
     this.submitted.set(true);
     if (!this.valid()) {
-      setTimeout(() => document.querySelector('.invalid, [aria-invalid="true"]')?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+      focusFirstError();
       return;
     }
     const item: ConnectionCountry = { country: this.country(), types: CONNECTION_TYPES.filter((t) => this.types().includes(t)), text: this.text().trim() };

@@ -46,6 +46,7 @@ export interface TimelineMilestone {
         <li class="milestone-block" [class.last]="last">
           <a
             class="milestone"
+            [attr.aria-disabled]="!m.link && !m.action ? 'true' : null"
             matRipple
             [matRippleDisabled]="!m.link && !m.action"
             [class.first]="$first"
@@ -56,7 +57,8 @@ export interface TimelineMilestone {
             [attr.href]="m.action ? '' : null"
             (click)="onMilestone($event, m)"
             [attr.role]="m.action ? 'button' : null"
-            [attr.aria-expanded]="m.action || m.expanded ? !!m.expanded : null"
+            [attr.aria-expanded]="m.action ? !!m.expanded : null"
+            [attr.aria-current]="m.state === 'current' ? 'step' : null"
             [attr.aria-label]="m.title + ', ' + (m.state === 'done' ? 'completed' : m.subtitle)"
           >
             <span class="rail">
@@ -93,12 +95,11 @@ export interface TimelineMilestone {
             </span>
           </a>
           @if (m.expanded && m.tasks?.length) {
-            <ol class="tasks" [class.last]="last">
-              <span class="tasks-line"></span>
+            <ol class="tasks" [class.last]="last" [attr.aria-label]="m.title + ' steps'">
               @for (t of m.tasks; track t.title) {
                 <li>
                   @if (t.link) {
-                    <a class="task" [routerLink]="t.link" [queryParams]="t.queryParams ?? null" matRipple>
+                    <a class="task" [routerLink]="t.link" [queryParams]="t.queryParams ?? null" matRipple [attr.aria-current]="t.state === 'next' ? 'step' : null">
                     <span class="sub-marker">
                       @if (t.state === 'done') {
                         <span class="done-disc"><ds-icon name="checkmark-round" [size]="16" /></span>
@@ -108,14 +109,14 @@ export interface TimelineMilestone {
                     </span>
                     <span class="task-item">
                       <span class="text">
-                        <span class="t-body-large-medium title">{{ t.title }}</span>
+                        <span class="t-body-large-medium title">{{ t.title }}<span class="sr-only">, {{ t.state === 'done' ? 'completed' : t.state === 'next' ? 'next step' : 'not available yet' }}</span></span>
                         <span class="t-body-medium subtitle">{{ t.subtitle }}</span>
                       </span>
                       <ds-icon name="chevron-right" [size]="16" class="chevron" />
                     </span>
                   </a>
                   } @else {
-                    <div class="task locked" aria-disabled="true">
+                    <div class="task locked">
                     <span class="sub-marker">
                       @if (t.state === 'done') {
                         <span class="done-disc"><ds-icon name="checkmark-round" [size]="16" /></span>
@@ -125,7 +126,7 @@ export interface TimelineMilestone {
                     </span>
                     <span class="task-item">
                       <span class="text">
-                        <span class="t-body-large-medium title">{{ t.title }}</span>
+                        <span class="t-body-large-medium title">{{ t.title }}<span class="sr-only">, {{ t.state === 'done' ? 'completed' : t.state === 'next' ? 'next step' : 'not available yet' }}</span></span>
                         <span class="t-body-medium subtitle">{{ t.subtitle }}</span>
                       </span>
                       
@@ -188,11 +189,12 @@ export interface TimelineMilestone {
 
     /* Question rows of the expanded module: same full-width list item, small marker on the rail. */
     .tasks { position: relative; animation: expand 220ms cubic-bezier(0.2, 0, 0, 1); }
-    .tasks-line {
+    .tasks::before {
+      content: '';
       position: absolute; left: calc(var(--space-2) + 19px); top: 0; bottom: 0; width: 2px;
       background: var(--md-sys-color-outline);
     }
-    .tasks.last .tasks-line { bottom: 44px; }
+    .tasks.last::before { bottom: 44px; }
     .task {
       position: relative; overflow: hidden;
       display: flex; align-items: center; gap: var(--space-2);

@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, input, model } from '@ang
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
+let nextChoiceId = 0;
+
 export interface ChoiceOption {
   value: string;
   label: string;
@@ -65,12 +67,19 @@ const CARD_STYLES = `
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (heading()) {
-      <p class="title-header t-body-medium-medium">{{ heading() }}</p>
+      <p class="title-header t-body-medium-medium" [id]="uid + '-label'">{{ heading() }}</p>
     }
     @if (error()) {
-      <p class="card-error t-body-small" role="alert">{{ error() }}</p>
+      <p class="card-error t-body-small" [id]="uid + '-error'" data-error>{{ error() }}</p>
     }
-    <mat-radio-group [value]="value()" (change)="value.set($event.value)" [attr.aria-label]="heading()">
+    <mat-radio-group
+      [value]="value()"
+      (change)="value.set($event.value)"
+      [attr.aria-labelledby]="heading() ? uid + '-label' : null"
+      [attr.aria-describedby]="error() ? uid + '-error' : null"
+      [attr.aria-invalid]="error() ? 'true' : null"
+      aria-required="true"
+    >
       @for (o of options(); track o.value) {
         <mat-radio-button class="row" labelPosition="before" [value]="o.value">
           {{ o.label }}
@@ -82,6 +91,7 @@ const CARD_STYLES = `
   styles: CARD_STYLES,
 })
 export class DsRadioCard {
+  protected readonly uid = `ds-choice-${nextChoiceId++}`;
   /** Validation message: red outline + message at the bottom of the card. */
   readonly error = input<string | null>(null);
   readonly heading = input<string | null>(null);
@@ -97,12 +107,17 @@ export class DsRadioCard {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (heading()) {
-      <p class="title-header t-body-medium-medium">{{ heading() }}</p>
+      <p class="title-header t-body-medium-medium" [id]="uid + '-label'">{{ heading() }}</p>
     }
     @if (error()) {
-      <p class="card-error t-body-small" role="alert">{{ error() }}</p>
+      <p class="card-error t-body-small" [id]="uid + '-error'" data-error>{{ error() }}</p>
     }
-    <div role="group" [attr.aria-label]="heading()">
+    <div
+      role="group"
+      [attr.aria-labelledby]="heading() ? uid + '-label' : null"
+      [attr.aria-describedby]="error() ? uid + '-error' : null"
+      [attr.aria-invalid]="error() ? 'true' : null"
+    >
       @for (o of options(); track o.value) {
         <mat-checkbox
           class="row"
@@ -130,6 +145,7 @@ export class DsRadioCard {
      .row.mat-mdc-checkbox-disabled { cursor: default; }`,
 })
 export class DsCheckboxCard {
+  protected readonly uid = `ds-choice-${nextChoiceId++}`;
   /** Validation message: red outline + message at the bottom of the card. */
   readonly error = input<string | null>(null);
   readonly heading = input<string | null>(null);
@@ -155,11 +171,19 @@ export class DsCheckboxCard {
   imports: [MatRadioModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p class="title t-body-large">{{ heading() }}</p>
+    <p class="title t-body-large" [id]="uid + '-label'">{{ heading() }}</p>
     @if (error()) {
-      <p class="group-error t-body-small" role="alert">{{ error() }}</p>
+      <p class="group-error t-body-small" [id]="uid + '-error'" data-error>{{ error() }}</p>
     }
-    <mat-radio-group class="group" [value]="value()" (change)="value.set($event.value)" [attr.aria-label]="heading()">
+    <mat-radio-group
+      class="group"
+      [value]="value()"
+      (change)="value.set($event.value)"
+      [attr.aria-labelledby]="uid + '-label'"
+      [attr.aria-describedby]="error() ? uid + '-error' : null"
+      [attr.aria-invalid]="error() ? 'true' : null"
+      aria-required="true"
+    >
       @for (o of options(); track o.value) {
         <mat-radio-button [value]="o.value">{{ o.label }}</mat-radio-button>
       }
@@ -181,6 +205,7 @@ export class DsCheckboxCard {
   `,
 })
 export class DsRadioGroupCard {
+  protected readonly uid = `ds-choice-${nextChoiceId++}`;
   /** Validation message: red outline + message at the bottom of the card. */
   readonly error = input<string | null>(null);
   readonly heading = input.required<string>();

@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, skip } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -17,4 +18,11 @@ import { RouterOutlet } from '@angular/router';
     }
   `,
 })
-export class App {}
+export class App {
+  constructor() {
+    // After each in-app navigation (not the first load), move focus to the new page's heading.
+    inject(Router)
+      .events.pipe(filter((e) => e instanceof NavigationEnd), skip(1))
+      .subscribe(() => setTimeout(() => document.querySelector<HTMLElement>('h1[tabindex="-1"]')?.focus(), 400));
+  }
+}

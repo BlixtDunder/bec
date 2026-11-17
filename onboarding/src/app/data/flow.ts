@@ -356,8 +356,9 @@ export function demoAnswers(): Answers {
     addressFiles: [],
     adviserFiles: [{ id: 'f2', name: 'aarsopgoerelse-2025.pdf', size: 245 * 1024, status: 'uploaded' }],
     adviserComment: '',
-    marketing: 'yes',
-    groupConsent: 'yes',
+    // Consents start unanswered, also in the demo: a pre-selected consent isn't valid (GDPR Art. 4(11), CJEU Planet49).
+    marketing: '',
+    groupConsent: '',
   };
 }
 

@@ -15,8 +15,8 @@ export interface LeaveDialogData {
   imports: [MatDialogModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2 class="title t-headline-small">Leave {{ data.section }}?</h2>
-    <p class="body t-body-large">Your answers in this section are only saved when you complete it.</p>
+    <h2 class="title t-headline-small" mat-dialog-title id="leave-title">Leave {{ data.section }}?</h2>
+    <p class="body t-body-large" id="leave-desc">Your answers in this section are only saved when you complete it.</p>
     <div class="actions">
       <button matButton="filled" type="button" cdkFocusInitial (click)="ref.close(false)">Keep going</button>
       <button matButton="text" type="button" (click)="ref.close(true)">Leave without saving</button>
