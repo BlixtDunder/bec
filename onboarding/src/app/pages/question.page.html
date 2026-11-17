@@ -204,46 +204,52 @@
     }
 
     @case ('q18') {
-      <section class="statement" aria-labelledby="statement-toggle">
-        <h2 class="statement-heading">
-          <button
-            type="button"
-            id="statement-toggle"
-            class="statement-toggle t-body-large-medium"
-            [attr.aria-expanded]="statementOpen()"
-            aria-controls="statement-text"
-            (click)="statementOpen.set(!statementOpen())"
-          >
-            What you’re saying yes to
-            <ds-icon name="chevron-down" [size]="16" class="chevron" [class.up]="statementOpen()" />
-          </button>
-        </h2>
-        <div id="statement-text" class="statement-text t-body-large" [hidden]="!statementOpen()">
-          <p>When you’re our customer, we’d like to tell you about news and information that’s relevant to you and your finances.</p>
-          <p>
-            If you say yes, Nykredit may contact you about news, offers and services within banking, mortgages, pensions,
-            insurance and investments, and about competitions and events from Nykredit and our partners.
-          </p>
-          <p>We contact you by email, text message and in our apps and online banking. We never call you to sell.</p>
-          <p>
-            To make our messages relevant, we use information about you, such as your contact details, type of home,
-            pension needs, investment preferences and interests, and how you use our services. You can object to this at
-            any time.
-          </p>
-          <a class="partners-link" href="https://www.nykredit.dk/" target="_blank" rel="noopener">
-            See our partners<span class="sr-only"> (opens in a new tab)</span>
-            <ds-icon name="launch" [size]="16" />
-          </a>
-        </div>
-      </section>
+      <ds-disclosure heading="What you’re saying yes to">
+        <p>When you’re our customer, we’d like to tell you about news and information that’s relevant to you and your finances.</p>
+        <p>
+          If you say yes, Nykredit may contact you about news, offers and services within banking, mortgages, pensions,
+          insurance and investments, and about competitions and events from Nykredit and our partners.
+        </p>
+        <p>We contact you by email, text message and in our apps and online banking. We never call you to sell.</p>
+        <p>
+          To make our messages relevant, we use information about you, such as your contact details, type of home,
+          pension needs, investment preferences and interests, and how you use our services. You can object to this at
+          any time.
+        </p>
+        <a href="https://www.nykredit.dk/" target="_blank" rel="noopener">
+          See our partners<span class="sr-only"> (opens in a new tab)</span>
+          <ds-icon name="launch" [size]="16" />
+        </a>
+      </ds-disclosure>
       <ds-radio-card heading="Your choice (required)" [options]="marketingOptions" [(value)]="a.marketing" [error]="err(!a.marketing, 'Choose an answer')" />
     }
 
     @case ('q19') {
-      <ds-alert type="info" heading="Consent statement">
-        Read the full statement before you choose. It opens in a new page.
-      </ds-alert>
-      <ds-radio-card heading="Do you give your consent?" [options]="groupOptions" [(value)]="a.groupConsent" [error]="err(!a.groupConsent, 'Choose an answer')" />
+      <ds-disclosure heading="What you’re saying yes to">
+        <p>
+          If you say yes, we may share information about you with the other companies in the Nykredit Group, so they can
+          give you advice and offers that fit your situation.
+        </p>
+        <p>We share:</p>
+        <ul>
+          <li>your name, contact details and CPR number</li>
+          <li>which products you have with us, such as accounts, loans, pensions and insurance</li>
+          <li>information about your finances, such as income, savings and debt</li>
+        </ul>
+        <p>
+          The information is shared with Nykredit Realkredit A/S, Totalkredit A/S, Nykredit Bank A/S and the other
+          companies in the Nykredit Group.
+        </p>
+        <p>
+          Your consent applies until you withdraw it. You can withdraw it at any time in online banking or by contacting
+          us. It doesn’t affect information we must share by law.
+        </p>
+        <a href="https://www.nykredit.dk/" target="_blank" rel="noopener">
+          See all Group companies<span class="sr-only"> (opens in a new tab)</span>
+          <ds-icon name="launch" [size]="16" />
+        </a>
+      </ds-disclosure>
+      <ds-radio-card heading="Do you give your consent? (required)" [options]="groupOptions" [(value)]="a.groupConsent" [error]="err(!a.groupConsent, 'Choose an answer')" />
     }
   }
 

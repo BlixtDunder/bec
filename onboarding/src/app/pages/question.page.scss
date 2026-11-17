@@ -135,31 +135,3 @@
   padding: var(--space-2);
   color: var(--md-sys-color-on-surface-variant);
 }
-
-// Q18 consent statement: disclosure card (heading > button[aria-expanded] controls the text)
-.statement {
-  background: var(--md-sys-color-secondary-container);
-  border-radius: var(--md-sys-shape-corner-medium);
-  overflow: hidden;
-}
-.statement-heading { margin: 0; font: inherit; }
-.statement-toggle {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
-  width: 100%; min-height: 56px; padding: var(--space-2);
-  border: 0; background: none; text-align: left; cursor: pointer;
-  color: var(--md-sys-color-on-surface);
-  .chevron { flex: none; transition: transform 200ms ease; }
-  .chevron.up { transform: rotate(180deg); }
-}
-.statement-text {
-  padding: 0 var(--space-2) var(--space-1);
-  color: var(--md-sys-color-on-surface);
-  p { margin: 0 0 var(--space-2); }
-}
-.partners-link {
-  display: inline-flex; align-items: center; gap: var(--space-1);
-  min-height: 48px;
-  color: var(--md-sys-color-primary);
-  text-decoration: underline; text-underline-offset: 3px;
-}
-@media (prefers-reduced-motion: reduce) { .statement-toggle .chevron { transition: none; } }

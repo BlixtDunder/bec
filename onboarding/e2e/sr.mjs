@@ -19,7 +19,7 @@ await p.click('ds-actions button:has-text("Continue")'); await p.waitForTimeout(
 console.log('q3 error focus:', await focused());
 // Q18: no preselection, disclosure semantics, error focus
 await seed(['q1','q2','q3','q4','q5','q6','q7','q9','q8','q10','q11','q12','q13','q14','q15','q16','q17']); await p.goto(B+'#/q/q18'); await p.reload(); await p.waitForTimeout(600);
-console.log('q18 checked radios:', await p.locator('input[type=radio]:checked').count(), '| toggle expanded:', await p.getAttribute('#statement-toggle','aria-expanded'));
+console.log('q18 checked radios:', await p.locator('input[type=radio]:checked').count(), '| toggle expanded:', await p.getAttribute('ds-disclosure button','aria-expanded'));
 await p.click('ds-actions button:has-text("Continue")'); await p.waitForTimeout(500);
 console.log('q18 error focus:', await focused());
 // keyboard: select with arrow keys and continue with Enter

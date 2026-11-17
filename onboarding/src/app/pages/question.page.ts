@@ -35,6 +35,7 @@ import { DsPhoneField } from '../ui/phone-field';
 import { ChoiceOption, DsCheckboxCard, DsRadioCard, DsRadioGroupCard } from '../ui/choice';
 import { DsUploadCard } from '../ui/upload';
 import { DsIcon } from '../ui/icon';
+import { DsDisclosure } from '../ui/disclosure';
 import { RemovedListItem } from './tax-country.page';
 import { DsLeaveDialog, LeaveDialogData } from '../ui/leave-dialog';
 
@@ -67,7 +68,7 @@ const COPY: Record<QuestionId, QuestionCopy> = {
     title: 'Marketing consent',
     body: 'Can we contact you about new options, products and services when they’re relevant to you and your finances?',
   },
-  q19: { title: 'Sharing within the group', body: 'Let us share information about you with the rest of the Nykredit Group.' },
+  q19: { title: 'Sharing within the group', body: 'Can we share information about you with the other companies in the Nykredit Group?' },
 };
 
 @Component({
@@ -88,6 +89,7 @@ const COPY: Record<QuestionId, QuestionCopy> = {
     DsRadioGroupCard,
     DsUploadCard,
     DsIcon,
+    DsDisclosure,
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './question.page.html',
@@ -233,9 +235,6 @@ export class QuestionPage implements DoCheck {
       ? 'Must show your name, address and full CPR number.'
       : 'Must show your name and address and be less than 3 months old.';
   }
-
-  /** Q18: the full consent statement is shown by default; it can be collapsed. */
-  protected readonly statementOpen = signal(true);
 
   // ---- Q4 tax countries ----------------------------------------------------
 

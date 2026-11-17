@@ -15,7 +15,7 @@ await seed(['q1','q2','q3']); await p.goto(B+'#/q/q4/country'); await p.reload()
 await p.click('ds-actions button:has-text("Add country")'); await scan('tax-country-errors');
 await seed(ALL, ['about','bank','money','docs','consents']); await p.goto(B+'#/review'); await p.reload(); await scan('review');
 // leave dialog
-await seed(['q1']); await p.goto(B+'#/q/q2'); await p.reload(); await p.waitForTimeout(500); await p.locator('ds-field').nth(1).click(); await p.keyboard.type('x'); await p.click('ds-task-bar button[aria-label="Close"]'); await scan('leave-dialog'); await p.keyboard.press('Escape'); await seed(ALL.slice(0,17)); await p.goto(B+'#/q/q18'); await p.reload(); await p.click('#statement-toggle'); await scan('q18-collapsed');
+await seed(['q1']); await p.goto(B+'#/q/q2'); await p.reload(); await p.waitForTimeout(500); await p.locator('ds-field').nth(1).click(); await p.keyboard.type('x'); await p.click('ds-task-bar button[aria-label="Close"]'); await scan('leave-dialog'); await p.keyboard.press('Escape'); await seed(ALL.slice(0,17)); await p.goto(B+'#/q/q18'); await p.reload(); await p.click('ds-disclosure button'); await scan('q18-collapsed'); await seed(ALL.slice(0,18)); await p.goto(B+'#/q/q19'); await p.reload(); await scan('q19'); await p.click('ds-disclosure button'); await scan('q19-collapsed');
 for (const [k,v] of Object.entries(results)) console.log(k, '|', v.help, '| nodes', v.n, '| on', [...v.pages].join(','), '\n   eg', v.eg);
 console.log('rules failing:', Object.keys(results).length);
 await b.close();
